@@ -633,7 +633,7 @@ function Import-TypeDataDefinitions {
 			# so that they can *all* be fixed before the developer tries again.
 			$Params.Keys | Where-Object { $null -eq $Params[$_] } | ForEach-Object { $Params.Remove($_) } | Out-Null
 			[System.Boolean]$IsErrorState = $false
-			$TargetObject = [PSCustomObject]@{'Attribute' = $Key; 'AttributeTarget' = $Definitions[$Key] }
+			$TargetObject = [PSCustomObject]@{'AttributeDefinition' = $Key; 'AttributeTarget' = $Definitions[$Key] }
 			if ([System.String]::IsNullOrWhiteSpace($Params['TypeName'])) {
 				# Update-TypeData requires the TypeName parameter.
 				$ex = [Stroniax.PowerShell.TypeDataDefinitionException]::new(
@@ -652,7 +652,7 @@ function Import-TypeDataDefinitions {
 					"The TypeData definition for the $($params['MemberType']) member '$($params['MemberName'])' " +
 					"of type '$($params['TypeName'])' cannot be processed. $ex"
 				)
-				Write-Error -ErrorRecord $er
+				$PSCmdlet.WriteError($er)
 				$IsErrorState = $true
 			}
 			if ($null -eq $Params['MemberType']) {
@@ -681,7 +681,7 @@ function Import-TypeDataDefinitions {
 					$er.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
 						"Could not determine the TypeData definition defined in the $( $Key.GetType().FullName ) attribute on $( $Dictionary[$Key] ). $ex"
 					)
-					Write-Error -ErrorRecord $er
+					$PSCmdlet.WriteError($er)
 					$IsErrorState = $true
 				}
 			}
@@ -772,7 +772,7 @@ function Import-TypeDataDefinitions {
 							# Omit $ex.Message; additional data provided by message will be irrelevant
 							# with definition of attribute and location
 						)
-						Write-Error -ErrorRecord $er
+						$PSCmdlet.WriteError($er)
 						$IsErrorState = $true
 					}
 				}
@@ -793,7 +793,7 @@ function Import-TypeDataDefinitions {
 						"The TypeData definition for the $( $params['MemberType'] ) member '$( $params['MemberName'] )' " +
 						"of type '$( $params['TypeName'] )' cannot be processed. $ex"
 					)
-					Write-Error -ErrorRecord $er
+					$PSCmdlet.WriteError($er)
 					$IsErrorState = $true
 				}
 				if ($RequireValue -and $null -eq $Params['Value']) {
@@ -816,7 +816,7 @@ function Import-TypeDataDefinitions {
 							"'$( $params['MemberName'] )' of type '$( $params['TypeName'] )' " +
 							"cannot be processed. $ex"
 						)
-						Write-Error -ErrorRecord $er
+						$PSCmdlet.WriteError($er)
 						$IsErrorState = $true
 					}
 					elseif ($RequireGetCodeReference) {
@@ -838,7 +838,7 @@ function Import-TypeDataDefinitions {
 							"'$( $params['MemberName'] )' of type '$( $params['TypeName'] )' " +
 							"cannot be processed. $ex"
 						)
-						Write-Error -ErrorRecord $er
+						$PSCmdlet.WriteError($er)
 						$IsErrorState = $true
 					}
 					else {
@@ -858,7 +858,7 @@ function Import-TypeDataDefinitions {
 							"The TypeData definition for the $( $params['MemberType'] ) member '$( $params['MemberName'] )' " +
 							"of type '$( $params['TypeName'] )' cannot be processed. $ex"
 						)
-						Write-Error -ErrorRecord $er
+						$PSCmdlet.WriteError($er)
 						$IsErrorState = $true
 					}
 				}
@@ -885,7 +885,7 @@ function Import-TypeDataDefinitions {
 						"'$( $params['MemberName'] )' of type '$( $params['TypeName'] )' " +
 						"cannot be processed. $ex"
 					)
-					Write-Error -ErrorRecord $er
+						$PSCmdlet.WriteError($er)
 					$IsErrorState = $true
 				}
 				if ($RequireGetCodeReference -and $null -ne $Params['Value'] -and (
@@ -911,7 +911,7 @@ function Import-TypeDataDefinitions {
 						"'$( $params['MemberName'] )' of type '$( $params['TypeName'] )' " +
 						"cannot be processed. $ex"
 					)
-					Write-Error -ErrorRecord $er
+					$PSCmdlet.WriteError($er)
 					$IsErrorState = $true
 				}
 				if ($RequireSetCodeReference -and $null -ne $Params['SecondValue'] -and (
@@ -941,15 +941,19 @@ function Import-TypeDataDefinitions {
 						"'$( $params['MemberName'] )' of type '$( $params['TypeName'] )' " +
 						"cannot be processed. $ex"
 					)
-					Write-Error -ErrorRecord $er
+					$PSCmdlet.WriteError($er)
 					$IsErrorState = $true
 				}
 			}
 			if ($IsErrorState) { continue }
 			#endregion
 
-			Write-Debug "Invoking Update-TypeData with the following parameters: $( [System.String]::Join(", ", $Params.Keys) )"
-			Update-TypeData @Params
+			Write-Debug "Invoking Update-TypeData with the following parameters: $( [System.String]::Join(", ", [System.String[]]$Params.Keys) )"
+			Update-TypeData @Params -ErrorAction SilentlyContinue -ErrorVariable ers
+			foreach ($er in $ers) {
+				$er.CategoryInfo.Activity = 'Update-TypeData'
+				$PSCmdlet.WriteError($er)
+			}
 		}
 	}
 }
