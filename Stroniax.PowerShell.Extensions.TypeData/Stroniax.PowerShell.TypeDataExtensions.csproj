@@ -21,4 +21,10 @@
     <Exec Command="$(PowerShellPath) -NoProfile -ExecutionPolicy RemoteSigned -File $(PSPostbuildScript) -Configuration $(ConfigurationName) -ProjectName $(ProjectName) -TargetName $(TargetName) -TargetPath $(TargetPath) -TargetDirectory $(TargetDir) -ProjectDirectory $(ProjectDir) -ModuleName $(PSModuleName)" />
   </Target>
 
+  <ItemGroup>
+    <None Update="Stroniax.PowerShell.TypeData.psm1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

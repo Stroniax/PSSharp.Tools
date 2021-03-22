@@ -34,7 +34,6 @@ $Config['PrivateCommands'] = @()
 # for each item here, Get-ChildItem is run with the parameters of an entry in this list.
 $Config['ImportFiles'] = @(
 	@{ 'Path' = $TargetDirectory; 'Recurse' = $true }
-	@{ 'Path' = $ProjectDirectory ; 'Filter' = '*.psm1' ; 'Recurse' = $true }
 )
 # Identify where a file should be placed upon module build
 $Config['FileMap'] = @(

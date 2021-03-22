@@ -86,7 +86,7 @@ Update-TypeData -TypeName 'Stroniax.PowerShell.PSCodePropertyFromExtensionMethod
 	"        }`n" +
 	"    }`n" +
 	"}`n"
-	Add-Type -TypeDefinition $TypeDefinition -ReferencedAssemblies $Definitions[$Key].DeclaringType.Assembly.Location
+	Add-Type -TypeDefinition $TypeDefinition -ReferencedAssemblies $attributeAppliedTo.DeclaringType.Assembly.Location
 	$GetMethod = Get-MethodReference -TypeName "PSDynamicCodeExtensionMethods.$DynamicTypeName" -MethodName "$MethodName" -MethodUse GetProperty -ErrorAction Ignore
 	if ($null -ne $GetMethod) {
 		$Params['Value'] = $GetMethod
@@ -98,15 +98,15 @@ Update-TypeData -TypeName 'Stroniax.PowerShell.PSCodeMethodFromExtensionMethodAt
 
 	# Create type and set method reference
 	[System.String]$MethodName = $Params['MemberName']
-	[System.String]$ReturnType = $Definitions[$Key].ReturnType.FullName
+	[System.String]$ReturnType = $attributeAppliedTo.ReturnType.FullName
 	if ($ReturnType -eq "System.Void") { $ReturnType = "void" }
-	[System.String]$ReferencedMethodPath = $Definitions[$Key].DeclaringType.FullName + "." + $Definitions[$Key].Name
+	[System.String]$ReferencedMethodPath = $attributeAppliedTo.DeclaringType.FullName + "." + $attributeAppliedTo.Name
 	[System.String]$InParameters = ''
 	[System.String]$InvokeParameters = ''
 	[System.String[]]$InParameterDefinitions = @()
 	[System.String[]]$InvokeParameterDefinitions = @()
 	[System.Boolean]$FirstParameter = $true
-	foreach ($param in $Definitions[$Key].GetParameters()) {
+	foreach ($param in $attributeAppliedTo.GetParameters()) {
 		if ($FirstParameter) {
 			$InParameterDefinitions += "System.Management.Automation.PSObject $($param.Name)"
 			$InvokeParameterDefinitions += "$($param.ParameterType.FullName)$($param.Name).BaseObject"
@@ -138,13 +138,18 @@ Update-TypeData -TypeName 'Stroniax.PowerShell.PSCodeMethodFromExtensionMethodAt
 	"        }`n" +
 	"    }`n" +
 	"}`n"
-	Add-Type -TypeDefinition $TypeDefinition -ReferencedAssemblies $Definitions[$Key].DeclaringType.Assembly.Location
+	Add-Type -TypeDefinition $TypeDefinition -ReferencedAssemblies $attributeAppliedTo.Assembly.Location
 	
 	$Method = Get-MethodReference -TypeName "PSDynamicCodeExtensionMethods.$DynamicTypeName" -MethodName "$MethodName" -MethodUse Method -ErrorAction Ignore
 	if ($null -ne $Method) {
 		$Params['Value'] = $Method
 	}
 } -Force
+
+# Pseudo-types defined via type data definitions assist argument completion.
+# Properties must be set before the type name is added to a PSCustomObject.
+Update-TypeData -TypeName 'Stroniax.PowerShell.PSTypeDataDefinition' -MemberType NoteProperty -MemberName 'AttributeDefinition' -Value $null -Force
+Update-TypeData -TypeName 'Stroniax.PowerShell.PSTypeDataDefinition' -MemberType NoteProperty -MemberName 'AttributeTarget' -Value $null -Force
 #endregion
 
 #region internal classes, functions, & variables
@@ -215,6 +220,26 @@ class PSTypeDataConfigurationItem {
 	[System.String]$Reason
 }
 
+
+class TransformationScriptAttribute : System.Management.Automation.ArgumentTransformationAttribute {
+	[ScriptBlock]$ScriptBlock
+	TransformationScriptAttribute([ScriptBlock]$ScriptBlock) {
+		$this.ScriptBlock = $ScriptBlock
+	}
+	[System.Object] Transform([System.Management.Automation.EngineIntrinsics]$engineIntrinsics, [System.Object]$inputData) 
+	{
+		return $this.ScriptBlock.InvokeWithContext(
+			$null,									# FunctionsToDefine
+			@(
+				[psvariable]::new('_', $inputData),							# assign $PSItem to allow quick processing without named args
+				[psvariable]::new('engineIntrinsics', $engineIntrinsics)	
+				[psvariable]::new('inputData', $inputData)
+			),
+			$engineIntrinsics,
+			$inputData
+		)
+	}
+}
 
 <#
 .SYNOPSIS
@@ -511,6 +536,126 @@ function Unblock-TypeDataDefinitions {
 
 <#
 .SYNOPSIS
+	Retrieves TypeData definition attributes and the items to which they are applied.
+.DESCRIPTION
+	Long description
+.EXAMPLE
+	PS C:\> <example usage>
+	Explanation of what the example does
+.INPUTS
+	Inputs (if any)
+.OUTPUTS
+	Output (if any)
+.NOTES
+	General notes
+#>
+function Get-TypeDataDefinitions {
+	[CmdletBinding(DefaultParameterSetName = 'AssemblySet')]
+	[OutputType('Stroniax.PowerShell.PSTypeDataDefinition')]
+	param(
+		# The assembly from which to retrieve TypeData definitions. The assembly and all types defined by the
+		# assembly will be scanned for TypeData definitions.
+		[Parameter(ParameterSetName = "AssemblySet")]
+		[System.Reflection.Assembly]$Assembly,
+
+		# The type from which to retrieve TypeData definitions. Types only need to be evaluated individually
+		# for PowerShell defined classes; otherwise, use the -Assembly parameter.
+		# An object passed to this parameter that is not [System.Type] will be transformed into that object's
+		# type.
+		[Parameter(Mandatory, ParameterSetName = "TypeSet", ValueFromPipeline)]
+		[TransformationScriptAttribute({if ($_ -isnot [System.Type]) { return $_.GetType() } else { return $_ }})]
+		[System.Type]$Type
+	)
+	begin {
+		if ($PSCmdlet.MyInvocation.ExpectingInput) {
+			[System.Type[]]$Types = @()
+		}
+	}
+	process {
+		if ($PSBoundParameters.ContainsKey('Type')) {
+			$Types += $Type
+		}
+		# Assembly is not bound from pipeline and therefore no action needs to be taken if the AssemblySet parameter is being invoked.
+	}
+	end {
+		if ($PSBoundParameters.ContainsKey('Assembly')) {
+			[Stroniax.PowerShell.TypeDataAttribute]::GetTypeDataDefinitions($Assembly).GetEnumerator() | ForEach-Object {
+				[PSCustomObject]@{
+					'AttributeDefinition' = $_.Key
+					'AttributeTarget' = $_.Value
+					'PSTypeName' = 'Stroniax.PowerShell.PSTypeDataDefinition'
+				}
+			}
+		}
+		elseif ($PSBoundParameters.ContainsKey('Type')) {
+			foreach ($t in $Types) {
+				[Stroniax.PowerShell.TypeDataAttribute]::GetTypeDataDefinitions($t).GetEnumerator() | ForEach-Object {
+					[PSCustomObject]@{
+						'AttributeDefinition' = $_.Key
+						'AttributeTarget' = $_.Value
+						'PSTypeName' = 'Stroniax.PowerShell.PSTypeDataDefinition'
+					}
+				}
+			}
+		}
+		else {
+			[System.Reflection.Assembly[]]$Assemblies = [System.AppDomain]::CurrentDomain.GetAssemblies()
+			# Check only against current settings. Persistent settings are designed as a starting point
+			# for any process, but are ignored at runtime.
+			[PSTypeDataDefinitionSettings]$Settings = [PSTypeDataDefinitionSettings]::Current
+			[System.Lazy[PSTypeDataDefinitionSettings]]$PersistentSettings = 
+				[System.Lazy[PSTypeDataDefinitionSettings]]::new(
+					[System.Func[PSTypeDataDefinitionSettings]]{ 
+						[PSTypeDataDefinitionSettings]::ReloadPersistentScope()
+						return [PSTypeDataDefinitionSettings]::Persistent
+					}
+				)
+			foreach ($asm in $Assemblies) {
+				[System.String]$Name = $asm.GetName().FullName
+				if ($Settings.BlockUnlessAllowed -and $Name -notin $Settings.AssembliesAllowed) {
+					Write-Verbose "Skipping assembly '$( $asm.GetName().Name )'. Reason: BlockUnlessAllowed."
+					continue
+				}
+				if ($Settings.BlockAfterFirstScan -and $Name -in $Settings.AssembliesOmitted) {
+					Write-Verbose "Skipping assembly '$( $asm.GetName().Name )'. Reason: BlockAfterFirstScan."
+					continue
+				}
+				# Blocked assemblies are blocked regardless of current settinsg
+				if ($Name -in $Settings.AssembliesBlocked) {
+					Write-Verbose "Skipping assembly '$( $asm.GetName().Name )'. Reason: Blocked."
+					continue
+				}
+				$Definitions = [Stroniax.PowerShell.TypeDataAttribute]::GetTypeDataDefinitions($asm)
+				Write-Debug ("Assembly '$( $asm.GetName().Name )' contains " +
+							"$( $Definitions.Count ) TypeData definitions.")
+				if ($Definitions.Count -eq 0) {
+					if ($PersistentSettings.Value.BlockAfterFirstScan -and
+						$PersistentSettings.Value.AssembliesOmitted -notcontains $Name)
+					{
+						$PersistentSettings.Value.AssembliesOmitted += $Name
+					}
+					if ($Settings.BlockAfterFirstScan) {
+						$Settings.AssembliesOmitted += $Name
+					}
+				}
+				$Definitions.GetEnumerator() | ForEach-Object {
+					[PSCustomObject]@{
+						'AttributeDefinition' = $_.Key
+						'AttributeTarget' = $_.Value
+						'PSTypeName' = 'Stroniax.PowerShell.PSTypeDataDefinition'
+					}
+				}
+			}
+			if ($PersistentSettings.IsValueCreated) {
+				Write-Debug 'Saving TypeData exclusions.'
+				$PersistentSettings.Value.Save()
+			}
+		}
+	}
+}
+
+<#
+.SYNOPSIS
 	Imports all TypeData defined by attributes applied to a given assembly or type.
 .DESCRIPTION
 	Imports PowerShell Extended Type System TypeData definitions.
@@ -531,97 +676,58 @@ function Import-TypeDataDefinitions {
 		[System.Reflection.Assembly]$Assembly,
 
 		[Parameter(Mandatory, ParameterSetName = "ImportTypeDefinitions")]
+		[TransformationScriptAttribute({if ($_ -isnot [System.Type]) { return $_.GetType() } else { return $_ }})]
 		[System.Type]$Type
 	)
 	process {
-		[System.Collections.Generic.Dictionary[Stroniax.PowerShell.TypeDataAttribute, System.Reflection.ICustomAttributeProvider]]$Definitions = $null;
-		if ($PSBoundParameters.ContainsKey("Type")) {
-			Write-Debug "Importing TypeData definitions from type '$type'."
-			$Definitions = [Stroniax.PowerShell.TypeDataAttribute]::GetTypeDataDefinitions($Type)
-		}
-		elseif ($PSBoundParameters.ContainsKey("Assembly")) {
-			Write-Debug "Importing TypeData definitions from assembly '$( $Assembly.GetName().Name )'."
-			$Definitions = [Stroniax.PowerShell.TypeDataAttribute]::GetTypeDataDefinitions($Assembly)
-			Write-Debug ("Identified $( $Definitions.Count ) TypeData definitions in the " +
-						"assembly $( $Assembly.GetName().Name ).")
-		}
-		else {
-			Write-Debug "Importing TypeData definitions from all loaded assemblies."
-			$Definitions = [System.Collections.Generic.Dictionary[Stroniax.PowerShell.TypeDataAttribute, System.Reflection.ICustomAttributeProvider]]::new();
-			foreach ($asm in [System.AppDomain]::CurrentDomain.GetAssemblies()) {
-				[System.String]$Name = $asm.GetName().Name
-				if ([PSTypeDataDefinitionSettings]::Current.BlockUnlessAllowed -and 
-					[PSTypeDataDefinitionSettings]::Current.AllowedAssemblies -notcontains $Name) {
-					Write-Debug "Skipping assembly $Name. Reason: BlockUnlessAllowed."
-					continue
-				}
-				elseif ([PSTypeDataDefinitionSettings]::Current.BlockAfterFirstScan -and
-					[PSTypeDataDefinitionSettings]::Current.AssembliesOmitted -contains $Name) {
-					Write-Debug "Skipping assembly $Name. Reason: BlockAfterFirstScan"
-					continue
-				}
-				elseif ([PSTypeDataDefinitionSettings]::Current.AssembliesBlocked -contains $Name) {
-					Write-Debug "Skipping assembly $Name. Reason: Blocked."
-					continue
-				}
-				$d = [Stroniax.PowerShell.TypeDataAttribute]::GetTypeDataDefinitions($asm);
-				Write-Debug "Identified $( $d.Count ) TypeData definitions in the assembly $Name."
-				if ($d.Count -eq 0) {
-					if ([PSTypeDataDefinitionSettings]::Current.BlockAfterFirstScan) {
-						Write-Debug ("Adding assembly $Name to assemblies that can be skipped when " +
-									"importing TypeData definitions (session).")
-						[PSTypeDataDefinitionSettings]::Current.AssembliesOmitted += $Name
-					}
-					if ([PSTypeDataDefinitionSettings]::Persistent.BlockAfterFirstScan) {
-						[PSTypeDataDefinitionSettings]::ReloadPersistentScope()
-						Write-Debug ("Adding assembly $Name to assemblies that can be skipped when " +
-									"importing TypeData definitions (persistent).")
-						[PSTypeDataDefinitionSettings]::Persistent.AssembliesOmitted += $Name
-						[PSTypeDataDefinitionSettings]::Persistent.Save()
-					}
-				}
-				foreach ($key in $d.Keys) {
-					$Definitions[$key] = $d[$key]
-				}
-			}
-		}
-		foreach ($Key in $Definitions.Keys) {
-			Write-Debug "Importing TypeData definition $( $Key.GetType().FullName ) applied to $( $Definitions[$Key] )."
-			# Add type TypeData
-			[System.Collections.Hashtable]$Params = @{
-				# TypeName
-				# MemberName
-				# MemberType
-				# Value
-				# SecondValue
-				# DefaultDisplayPropertySet
-				# TypeConverter
-				# TypeAdapter
-				# Force
-			}
-			
-			# Errors will be handled below. SetParameters() provides abnormal invocation info
-			try {
-				$Key.SetParameters($Params, $Definitions[$Key])
-			} catch {}
+		$Definitions = Get-TypeDataDefinitions @PSBoundParameters
+		foreach ($TypeDataDefinition in $Definitions) {
+			Write-Debug ("Importing TypeData definition " +
+						"$( $TypeDataDefinition.AttributeDefinition.GetType().FullName ) " +
+						"applied to $( $TypeDataDefinition.AttributeTarget ).")
+			[System.Collections.Hashtable]$Params = @{}
 
-			if ($Key -is [Stroniax.PowerShell.PSTypeConverterAttribute]) {
-				if ($Key.CanConvertTypeNames) {
-					$ThisType = $Definitions[$Key].FullName
-					foreach ($Type in $Key.CanConvertTypeNames) {
-						Update-TypeData -TypeConverter $ThisType -TypeName $Type
+			if ($TypeDataDefinition.AttributeDefinition -is [Stroniax.PowerShell.PSTypeConverterAttribute]) {
+				if ($TypeDataDefinition.AttributeDefinition.CanConvertTypeNames) {
+					$ThisType = $TypeDataDefinition.AttributeTarget.FullName
+					foreach ($Type in $TypeDataDefinition.AttributeDefinition.CanConvertTypeNames) {
+						$Params = @{
+							TypeConverter 	= $ThisType
+							TypeName 		= $Type
+							ErrorAction 	= [System.Management.Automation.ActionPreference]::SilentlyContinue
+							ErrorVariable 	= 'ers'
+						}
+						Update-TypeData @Params
+						foreach ($er in $ers) {
+							$PSCmdlet.WriteError($er)
+						}
 					}
 					continue
 				}
 			}
-			elseif ($Key -is [Stroniax.PowerShell.PSTypeAdapterAttribute]) {
-				if ($Key.CanAdaptTypeNames) {
-					$ThisType = $Definitions[$Key].FullName
-					foreach ($Type in $Key.CanAdaptTypeNames) {
-						Update-TypeData -TypeAdapter $ThisType -TypeName $Type
+			elseif ($TypeDataDefinition.AttributeDefinition -is [Stroniax.PowerShell.PSTypeAdapterAttribute]) {
+				if ($TypeDataDefinition.AttributeDefinition.CanAdaptTypeNames) {
+					$ThisType = $TypeDataDefinition.AttributeTarget.FullName
+					foreach ($Type in $TypeDataDefinition.AttributeDefinition.CanAdaptTypeNames) {
+						$Params = @{
+							TypeAdapter 	= $ThisType
+							TypeName 		= $Type
+							ErrorAction 	= [System.Management.Automation.ActionPreference]::SilentlyContinue
+							ErrorVariable 	= 'ers'
+						}
+						Update-TypeData @Params
+						foreach ($er in $ers) {
+							$PSCmdlet.WriteError($er)
+						}
 					}
 					continue
 				}
+			}
+			else {
+				# Errors will be handled below. SetParameters() provides abnormal invocation info
+				try {
+					$TypeDataDefinition.AttributeDefinition.SetParameters($Params, $TypedataDefinition.AttributeTarget)
+				} catch {}
 			}
 			
 			#region Error Reporting
@@ -633,7 +739,6 @@ function Import-TypeDataDefinitions {
 			# so that they can *all* be fixed before the developer tries again.
 			$Params.Keys | Where-Object { $null -eq $Params[$_] } | ForEach-Object { $Params.Remove($_) } | Out-Null
 			[System.Boolean]$IsErrorState = $false
-			$TargetObject = [PSCustomObject]@{'AttributeDefinition' = $Key; 'AttributeTarget' = $Definitions[$Key] }
 			if ([System.String]::IsNullOrWhiteSpace($Params['TypeName'])) {
 				# Update-TypeData requires the TypeName parameter.
 				$ex = [Stroniax.PowerShell.TypeDataDefinitionException]::new(
@@ -646,7 +751,7 @@ function Import-TypeDataDefinitions {
 					$ex, 
 					'TypeNameNotProvided', 
 					[System.Management.Automation.ErrorCategory]::MetadataError,
-					$TargetObject
+					$TypeDataDefinition
 				)
 				$er.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
 					"The TypeData definition for the $($params['MemberType']) member '$($params['MemberName'])' " +
@@ -676,10 +781,10 @@ function Import-TypeDataDefinitions {
 						$ex,
 						'TypeDataNotDefined',
 						[System.Management.Automation.ErrorCategory]::MetadataError,
-						$TargetObject
+						$TypeDataDefinition
 					)
 					$er.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
-						"Could not determine the TypeData definition defined in the $( $Key.GetType().FullName ) attribute on $( $Dictionary[$Key] ). $ex"
+						"Could not determine the TypeData definition defined in the $( $TypeDataDefinition.AttributeDefinition.GetType().FullName ) attribute on $( $TypeDataDefinition.AttributeTarget ). $ex"
 					)
 					$PSCmdlet.WriteError($er)
 					$IsErrorState = $true
@@ -764,11 +869,11 @@ function Import-TypeDataDefinitions {
 							$ex,
 							'TypeDataNotDefined',
 							[System.Management.Automation.ErrorCategory]::MetadataError,
-							$TargetObject
+							$TypeDataDefinition
 						)
 						$er.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
 							"Could not determine the TypeData definition defined in the " +
-							"$( $Key.GetType().FullName ) attribute on $( $Dictionary[$Key] )."
+							"$( $TypeDataDefinition.AttributeDefinition.GetType().FullName ) attribute on $( $TypeDataDefinition.AttributeTarget )."
 							# Omit $ex.Message; additional data provided by message will be irrelevant
 							# with definition of attribute and location
 						)
@@ -787,7 +892,7 @@ function Import-TypeDataDefinitions {
 						$ex,
 						'MemberNameNotProvided',
 						[System.Management.Automation.ErrorCategory]::MetadataError,
-						$TargetObject
+						$TypeDataDefinition
 					)
 					$er.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
 						"The TypeData definition for the $( $params['MemberType'] ) member '$( $params['MemberName'] )' " +
@@ -809,7 +914,7 @@ function Import-TypeDataDefinitions {
 							$ex,
 							'CodeReferenceNotFound',
 							[System.Management.Automation.ErrorCategory]::MetadataError,
-							$TargetObject
+							$TypeDataDefinition
 						)
 						$er.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
 							"The TypeData definition for the $( $params['MemberType'] ) member " +
@@ -831,7 +936,7 @@ function Import-TypeDataDefinitions {
 							$ex,
 							'GetCodeReferenceNotFound',
 							[System.Management.Automation.ErrorCategory]::MetadataError,
-							$TargetObject
+							$TypeDataDefinition
 						)
 						$er.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
 							"The TypeData definition for the $( $params['MemberType'] ) member " +
@@ -852,7 +957,7 @@ function Import-TypeDataDefinitions {
 							$ex,
 							'ValueNotProvided',
 							[System.Management.Automation.ErrorCategory]::MetadataError,
-							$TargetObject
+							$TypeDataDefinition
 						)
 						$er.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
 							"The TypeData definition for the $( $params['MemberType'] ) member '$( $params['MemberName'] )' " +
@@ -878,7 +983,7 @@ function Import-TypeDataDefinitions {
 						$ex,
 						'CodeReferenceInvalid',
 						[System.Management.Automation.ErrorCategory]::MetadataError,
-						$TargetObject
+						$TypeDataDefinition
 					)
 					$er.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
 						"The TypeData definition for the $( $params['MemberType'] ) member " +
@@ -904,7 +1009,7 @@ function Import-TypeDataDefinitions {
 						$ex,
 						'GetCodeReferenceNotFound',
 						[System.Management.Automation.ErrorCategory]::MetadataError,
-						$TargetObject
+						$TypeDataDefinition
 					)
 					$er.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
 						"The TypeData definition for the $( $params['MemberType'] ) member " +
@@ -934,7 +1039,7 @@ function Import-TypeDataDefinitions {
 						$ex,
 						'SetCodeReferenceNotFound',
 						[System.Management.Automation.ErrorCategory]::MetadataError,
-						$TargetObject
+						$TypeDataDefinition
 					)
 					$er.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
 						"The TypeData definition for the $( $params['MemberType'] ) member " +
