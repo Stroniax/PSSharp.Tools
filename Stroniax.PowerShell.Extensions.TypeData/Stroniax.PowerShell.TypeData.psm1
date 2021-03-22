@@ -599,7 +599,12 @@ function Import-TypeDataDefinitions {
 				# TypeAdapter
 				# Force
 			}
-			$Key.SetParameters($Params, $Definitions[$Key])
+			
+			# Errors will be handled below. SetParameters() provides abnormal invocation info
+			try {
+				$Key.SetParameters($Params, $Definitions[$Key])
+			} catch {}
+
 			if ($Key -is [Stroniax.PowerShell.PSTypeConverterAttribute]) {
 				if ($Key.CanConvertTypeNames) {
 					$ThisType = $Definitions[$Key].FullName
