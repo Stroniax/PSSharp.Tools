@@ -7,9 +7,9 @@ using System.Text;
 
 namespace Stroniax.Powershell
 {
-    public abstract class TypeDataAttribute : Attribute
+    public abstract class PSTypeDataAttribute : Attribute
     {
-        protected internal TypeDataAttribute()
+        protected internal PSTypeDataAttribute()
         {
         }
         public bool Force { get; set; }
@@ -17,17 +17,17 @@ namespace Stroniax.Powershell
         {
             parameters["Force"] = Force;
         }
-        public static Dictionary<TypeDataAttribute, ICustomAttributeProvider> GetTypeDataDefinitions(Type type)
-            => GetTypeDataDefinitions(type, new Dictionary<TypeDataAttribute, ICustomAttributeProvider>());
-        private static Dictionary<TypeDataAttribute, ICustomAttributeProvider> GetTypeDataDefinitions(Type type, Dictionary<TypeDataAttribute, ICustomAttributeProvider> output)
+        public static Dictionary<PSTypeDataAttribute, ICustomAttributeProvider> GetTypeDataDefinitions(Type type)
+            => GetTypeDataDefinitions(type, new Dictionary<PSTypeDataAttribute, ICustomAttributeProvider>());
+        private static Dictionary<PSTypeDataAttribute, ICustomAttributeProvider> GetTypeDataDefinitions(Type type, Dictionary<PSTypeDataAttribute, ICustomAttributeProvider> output)
         {
-            foreach (var attr in type.GetCustomAttributes<TypeDataAttribute>(true))
+            foreach (var attr in type.GetCustomAttributes<PSTypeDataAttribute>(true))
             {
                 output.Add(attr, type);
             }
-            foreach (var member in type.GetMembers().Where(m => m.IsDefined(typeof(TypeDataAttribute), false)))
+            foreach (var member in type.GetMembers().Where(m => m.IsDefined(typeof(PSTypeDataAttribute), false)))
             {
-                foreach (var attr in member.GetCustomAttributes<TypeDataAttribute>(true))
+                foreach (var attr in member.GetCustomAttributes<PSTypeDataAttribute>(true))
                 {
                     output.Add(attr, member);
                 }
@@ -38,14 +38,14 @@ namespace Stroniax.Powershell
             }
             return output;
         }
-        public static Dictionary<TypeDataAttribute, ICustomAttributeProvider> GetTypeDataDefinitions(Assembly assembly)
+        public static Dictionary<PSTypeDataAttribute, ICustomAttributeProvider> GetTypeDataDefinitions(Assembly assembly)
         {
-            var output = new Dictionary<TypeDataAttribute, ICustomAttributeProvider>();
-            foreach (var attr in assembly.GetCustomAttributes<TypeDataAttribute>())
+            var output = new Dictionary<PSTypeDataAttribute, ICustomAttributeProvider>();
+            foreach (var attr in assembly.GetCustomAttributes<PSTypeDataAttribute>())
             {
                 output.Add(attr, assembly);
             }
-            foreach (var type in assembly.GetTypes().Where(t => t.IsPublic && t.IsDefined(typeof(TypeDataAttribute), false)))
+            foreach (var type in assembly.GetTypes().Where(t => t.IsPublic && t.IsDefined(typeof(PSTypeDataAttribute), false)))
             {
                 GetTypeDataDefinitions(type, output);
             }
@@ -54,7 +54,7 @@ namespace Stroniax.Powershell
     }
 
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-    public class PSNotePropertyAttribute : TypeDataAttribute
+    public class PSNotePropertyAttribute : PSTypeDataAttribute
     {
         public PSNotePropertyAttribute(string name, object value)
         {
@@ -93,7 +93,7 @@ namespace Stroniax.Powershell
         }
     }
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = true, Inherited = false)]
-    public class PSAliasPropertyAttribute : TypeDataAttribute
+    public class PSAliasPropertyAttribute : PSTypeDataAttribute
     {
         public PSAliasPropertyAttribute(string alias)
         {
@@ -134,7 +134,7 @@ namespace Stroniax.Powershell
         }
     }
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-    public class PSCodePropertyAttribute : TypeDataAttribute
+    public class PSCodePropertyAttribute : PSTypeDataAttribute
     {
         public PSCodePropertyAttribute(string propertyName, Type referencedGetType, string referencedGetMethodName)
             : this(propertyName, referencedGetType.FullName, referencedGetMethodName, null, null)
@@ -233,7 +233,7 @@ namespace Stroniax.Powershell
         }
     }
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-    public class PSScriptPropertyAttribute : TypeDataAttribute
+    public class PSScriptPropertyAttribute : PSTypeDataAttribute
     {
         public PSScriptPropertyAttribute(string propertyName, string? getScript)
             : this(propertyName, getScript, null)
@@ -289,7 +289,7 @@ namespace Stroniax.Powershell
         }
     }
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
-    public class PSCodePropertyDefinitionAttribute : TypeDataAttribute
+    public class PSCodePropertyDefinitionAttribute : PSTypeDataAttribute
     {
         public PSCodePropertyDefinitionAttribute(string appliesToTypeName)
         {
@@ -326,7 +326,7 @@ namespace Stroniax.Powershell
         }
     }
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
-    public class PSCodeMethodDefinitionAttribute : TypeDataAttribute
+    public class PSCodeMethodDefinitionAttribute : PSTypeDataAttribute
     {
         public PSCodeMethodDefinitionAttribute(string appliesToTypeName)
         {
@@ -363,7 +363,7 @@ namespace Stroniax.Powershell
         }
     }
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-    public class PSCodeMethodFromExtensionMethodAttribute : TypeDataAttribute
+    public class PSCodeMethodFromExtensionMethodAttribute : PSTypeDataAttribute
     {
         public string? MethodName { get; set; }
         public override void SetParameters(Hashtable parameters, ICustomAttributeProvider attributeAppliedTo)
@@ -384,7 +384,7 @@ namespace Stroniax.Powershell
         }
     }
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-    public class PSCodePropertyFromExtensionMethodAttribute : TypeDataAttribute
+    public class PSCodePropertyFromExtensionMethodAttribute : PSTypeDataAttribute
     {
         public string? PropertyName { get; set; }
         public override void SetParameters(Hashtable parameters, ICustomAttributeProvider attributeAppliedTo)
@@ -405,7 +405,7 @@ namespace Stroniax.Powershell
         }
     }
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-    public class PSScriptMethodAttribute : TypeDataAttribute
+    public class PSScriptMethodAttribute : PSTypeDataAttribute
     {
         public string MethodName { get; }
         public string Script { get; }
@@ -447,7 +447,7 @@ namespace Stroniax.Powershell
         }
     }
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-    public class PSCodeMethodAttribute : TypeDataAttribute
+    public class PSCodeMethodAttribute : PSTypeDataAttribute
     {
         public PSCodeMethodAttribute(string referencedTypeName, string referencedMethodName)
         {
@@ -495,7 +495,7 @@ namespace Stroniax.Powershell
         }
     }
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-    public class PSDefaultPropertySetAttribute : TypeDataAttribute
+    public class PSDefaultPropertySetAttribute : PSTypeDataAttribute
     {
         public PSDefaultPropertySetAttribute(params string[] properties)
         {
@@ -533,7 +533,7 @@ namespace Stroniax.Powershell
         }
     }
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-    public class PSTypeConverterAttribute : TypeDataAttribute
+    public class PSTypeConverterAttribute : PSTypeDataAttribute
     {
         public Type? PSTypeConverter { get; }
         public string[]? CanConvertTypeNames { get => _canConvertTypeNames.ToArray(); }
@@ -563,7 +563,7 @@ namespace Stroniax.Powershell
         }
     }
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-    public class PSTypeAdapterAttribute : TypeDataAttribute
+    public class PSTypeAdapterAttribute : PSTypeDataAttribute
     {
         public Type? PSTypeAdapter { get; }
         public string[]? CanAdaptTypeNames { get => _canAdaptTypeNames.ToArray(); }

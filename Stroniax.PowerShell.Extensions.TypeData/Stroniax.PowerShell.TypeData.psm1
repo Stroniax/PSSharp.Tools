@@ -1,7 +1,7 @@
-﻿#region TypeDataAttribute.SetParameters() PowerShell Overrides
+﻿#region PSTypeDataAttribute.SetParameters() PowerShell Overrides
 
 # These ScriptMethods override the SetParameters methods of some classes derived from
-# Stroniax.PowerShell.TypeDataAttribute where setting the parameters must be done in PowerShell
+# Stroniax.PowerShell.PSTypeDataAttribute where setting the parameters must be done in PowerShell
 # either due to type casting, requiring PowerShell types, or dynamically generating code.
 
 Update-TypeData -TypeName 'Stroniax.PowerShell.PSScriptMethodAttribute' -MemberType 'ScriptMethod' -MemberName 'SetParameters' -Value {
@@ -580,7 +580,7 @@ function Get-TypeDataDefinitions {
 	}
 	end {
 		if ($PSBoundParameters.ContainsKey('Assembly')) {
-			[Stroniax.PowerShell.TypeDataAttribute]::GetTypeDataDefinitions($Assembly).GetEnumerator() | ForEach-Object {
+			[Stroniax.PowerShell.PSTypeDataAttribute]::GetTypeDataDefinitions($Assembly).GetEnumerator() | ForEach-Object {
 				[PSCustomObject]@{
 					'AttributeDefinition' = $_.Key
 					'AttributeTarget' = $_.Value
@@ -590,7 +590,7 @@ function Get-TypeDataDefinitions {
 		}
 		elseif ($PSBoundParameters.ContainsKey('Type')) {
 			foreach ($t in $Types) {
-				[Stroniax.PowerShell.TypeDataAttribute]::GetTypeDataDefinitions($t).GetEnumerator() | ForEach-Object {
+				[Stroniax.PowerShell.PSTypeDataAttribute]::GetTypeDataDefinitions($t).GetEnumerator() | ForEach-Object {
 					[PSCustomObject]@{
 						'AttributeDefinition' = $_.Key
 						'AttributeTarget' = $_.Value
@@ -626,7 +626,7 @@ function Get-TypeDataDefinitions {
 					Write-Verbose "Skipping assembly '$( $asm.GetName().Name )'. Reason: Blocked."
 					continue
 				}
-				$Definitions = [Stroniax.PowerShell.TypeDataAttribute]::GetTypeDataDefinitions($asm)
+				$Definitions = [Stroniax.PowerShell.PSTypeDataAttribute]::GetTypeDataDefinitions($asm)
 				Write-Debug ("Assembly '$( $asm.GetName().Name )' contains " +
 							"$( $Definitions.Count ) TypeData definitions.")
 				if ($Definitions.Count -eq 0) {
