@@ -8,4 +8,8 @@
 		<PSModuleName>Stroniax.PowerShell.ParameterExtensions</PSModuleName>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="PowerShellStandard.Library" Version="5.1.0" />
+	</ItemGroup>
+
 </Project>
