@@ -229,9 +229,10 @@ class TransformationScriptAttribute : System.Management.Automation.ArgumentTrans
 	[System.Object] Transform([System.Management.Automation.EngineIntrinsics]$engineIntrinsics, [System.Object]$inputData) 
 	{
 		return $this.ScriptBlock.InvokeWithContext(
-			$null,									# FunctionsToDefine
+			$null, # FunctionsToDefine
 			@(
-				[psvariable]::new('_', $inputData),							# assign $PSItem to allow quick processing without named args
+				[psvariable]::new('_', $inputData), # assign $PSItem to allow quick processing without named args,
+													# like ArgumentCompleterAttribute or ValidateScriptAttribute.
 				[psvariable]::new('engineIntrinsics', $engineIntrinsics)	
 				[psvariable]::new('inputData', $inputData)
 			),
