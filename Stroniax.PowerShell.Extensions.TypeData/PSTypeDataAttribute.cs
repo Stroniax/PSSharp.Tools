@@ -45,11 +45,21 @@ namespace Stroniax.Powershell
             {
                 output.Add(attr, assembly);
             }
-            foreach (var type in assembly.GetTypes().Where(t => t.IsPublic && t.IsDefined(typeof(PSTypeDataAttribute), false)))
+            foreach (var type in assembly.GetTypes().Where(t => t.IsPublic))
             {
                 GetTypeDataDefinitions(type, output);
             }
             return output;
+        }
+        public override bool Equals(object obj) => ReferenceEquals(this, obj);
+
+        public override int GetHashCode()
+        {
+            int hashCode = 229826242;
+            hashCode = hashCode * -1521134295 + base.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<object>.Default.GetHashCode(TypeId);
+            hashCode = hashCode * -1521134295 + Force.GetHashCode();
+            return hashCode;
         }
     }
 
@@ -595,6 +605,7 @@ namespace Stroniax.Powershell
     [PSNoteProperty("Dwayne", "(The Rock) Johnson")]
     [PSCodeProperty("Andre", "The", "Giant")]
     [PSDefaultPropertySet(nameof(DefaultProperty), "John", "Andre")]
+    [PSScriptProperty("One", "'Three'")]
     public class Test
     {
         public string? DefaultProperty { get; set; }
@@ -602,8 +613,10 @@ namespace Stroniax.Powershell
     public static class StaticTests
     {
         [PSCodeMethodFromExtensionMethod]
-        public static bool TestExtension1(this string fromString) => true;
+        public static bool IsNull(this string fromString) => fromString is null;
         [PSCodePropertyFromExtensionMethod]
-        public static bool NullOrEmpty(this string fromString) => string.IsNullOrEmpty(fromString);
+        public static bool IsNullOrEmpty(this string fromString) => string.IsNullOrEmpty(fromString);
+        [PSCodeMethodFromExtensionMethod]
+        public static string ToString(this object[] array, string separator) => string.Join(separator, array);
     }
 }
