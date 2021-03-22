@@ -599,4 +599,11 @@ namespace Stroniax.Powershell
     {
         public string? DefaultProperty { get; set; }
     }
+    public static class StaticTests
+    {
+        [PSCodeMethodFromExtensionMethod]
+        public static bool TestExtension1(this string fromString) => true;
+        [PSCodePropertyFromExtensionMethod]
+        public static bool NullOrEmpty(this string fromString) => string.IsNullOrEmpty(fromString);
+    }
 }
