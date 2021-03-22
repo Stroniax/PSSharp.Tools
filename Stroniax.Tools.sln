@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31105.61
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stroniax.PowerShell.TypeDataExtensions", "Stroniax.PowerShell.Extensions.TypeData\Stroniax.PowerShell.TypeDataExtensions.csproj", "{C8999F1A-7806-4AB2-9304-3A5267E6F2C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stroniax.AsyncExtensions", "Stroniax.Tasks.Extensions.AwaitableInterfaces\Stroniax.AsyncExtensions.csproj", "{8EC7F3C2-CC72-444B-BA94-359CF8EBFB23}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stroniax.PowerShell.TaskJob", "Stroniax.PowerShell.TaskJob\Stroniax.PowerShell.TaskJob.csproj", "{781A6A17-F315-4105-9B9E-512BB6CBB869}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stroniax.PowerShell.HashtableExtensions", "Stroniax.PowerShell.Extensions.Hashtable\Stroniax.PowerShell.HashtableExtensions.csproj", "{B978DEA3-3DAA-4808-B5F3-97A40B21696B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stroniax.PowerShell.ParameterExtensions", "Stroniax.PowerShell.Extensions.Attributes\Stroniax.PowerShell.ParameterExtensions.csproj", "{4F104B4C-0F19-4CAA-AE42-C6793946B583}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stroniax.PowerShell.JobExtensions", "Stroniax.PowerShell.Extensions.Jobs\Stroniax.PowerShell.JobExtensions.csproj", "{AE5427D2-0C04-43A1-87BA-1329687A1C7C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C8999F1A-7806-4AB2-9304-3A5267E6F2C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8999F1A-7806-4AB2-9304-3A5267E6F2C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8999F1A-7806-4AB2-9304-3A5267E6F2C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8999F1A-7806-4AB2-9304-3A5267E6F2C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8EC7F3C2-CC72-444B-BA94-359CF8EBFB23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8EC7F3C2-CC72-444B-BA94-359CF8EBFB23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8EC7F3C2-CC72-444B-BA94-359CF8EBFB23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8EC7F3C2-CC72-444B-BA94-359CF8EBFB23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{781A6A17-F315-4105-9B9E-512BB6CBB869}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{781A6A17-F315-4105-9B9E-512BB6CBB869}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{781A6A17-F315-4105-9B9E-512BB6CBB869}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{781A6A17-F315-4105-9B9E-512BB6CBB869}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B978DEA3-3DAA-4808-B5F3-97A40B21696B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B978DEA3-3DAA-4808-B5F3-97A40B21696B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B978DEA3-3DAA-4808-B5F3-97A40B21696B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B978DEA3-3DAA-4808-B5F3-97A40B21696B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F104B4C-0F19-4CAA-AE42-C6793946B583}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F104B4C-0F19-4CAA-AE42-C6793946B583}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F104B4C-0F19-4CAA-AE42-C6793946B583}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F104B4C-0F19-4CAA-AE42-C6793946B583}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE5427D2-0C04-43A1-87BA-1329687A1C7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE5427D2-0C04-43A1-87BA-1329687A1C7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE5427D2-0C04-43A1-87BA-1329687A1C7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE5427D2-0C04-43A1-87BA-1329687A1C7C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2A9E9504-A3F8-4B97-9452-9A0937302147}
+	EndGlobalSection
+EndGlobal
