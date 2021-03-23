@@ -1,8 +1,8 @@
-﻿using Stroniax.Powershell;
+﻿using PSSharp;
 using System;
 using System.Management.Automation;
 
-namespace Stroniax.PowerShell.Extensions
+namespace PSSharp.Extensions
 {
     /// <summary>
     /// Extensions for the <see cref="Job"/> class.

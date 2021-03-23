@@ -1,6 +1,6 @@
 ﻿using System.Management.Automation;
 
-namespace Stroniax.PowerShell
+namespace PSSharp
 {
     internal class JobOutput
     {

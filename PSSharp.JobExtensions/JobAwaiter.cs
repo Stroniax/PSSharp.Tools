@@ -1,11 +1,11 @@
-﻿using Stroniax.PowerShell.Extensions;
+﻿using PSSharp.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Management.Automation;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Stroniax.Powershell
+namespace PSSharp
 {
     /// <summary>
     /// An awaiter used to <see langword="await"/> a PowerShell <see cref="Job"/>.

@@ -4,8 +4,8 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>8.0</LangVersion>
 		<Nullable>enable</Nullable>
-		<RootNamespace>Stroniax.PowerShell</RootNamespace>
-		<PSModuleName>Stroniax.PowerShell.TaskJob</PSModuleName>
+		<RootNamespace>PSSharp</RootNamespace>
+		<PSModuleName>PSSharp.TaskJob</PSModuleName>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -14,8 +14,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Stroniax.PowerShell.Extensions.Jobs\Stroniax.PowerShell.JobExtensions.csproj" />
-		<ProjectReference Include="..\Stroniax.Tasks.Extensions.AwaitableInterfaces\Stroniax.AsyncExtensions.csproj" />
+		<ProjectReference Include="..\PSSharp.JobExtensions\PSSharp.JobExtensions.csproj" />
+		<ProjectReference Include="..\PSSharp.AsyncExtensions\PSSharp.AsyncExtensions.csproj" />
 	</ItemGroup>
 
 </Project>

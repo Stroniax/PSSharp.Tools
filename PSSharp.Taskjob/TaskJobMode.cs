@@ -1,4 +1,4 @@
-﻿namespace Stroniax.PowerShell
+﻿namespace PSSharp
 {
     /// <summary>
     /// Indicates behavior for a <see cref="TaskJob"/> that is constructed with an action to be invoked instead of with existing tasks.

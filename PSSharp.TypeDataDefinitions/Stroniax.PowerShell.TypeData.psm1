@@ -1,17 +1,17 @@
 ﻿#region PSTypeDataAttribute.SetParameters() PowerShell Overrides
 
 # These ScriptMethods override the SetParameters methods of some classes derived from
-# Stroniax.PowerShell.PSTypeDataAttribute where setting the parameters must be done in PowerShell
+# PSSharp.PSTypeDataAttribute where setting the parameters must be done in PowerShell
 # either due to type casting, requiring PowerShell types, or dynamically generating code.
 
-Update-TypeData -TypeName 'Stroniax.PowerShell.PSScriptMethodAttribute' -MemberType 'ScriptMethod' -MemberName 'SetParameters' -Value {
+Update-TypeData -TypeName 'PSSharp.PSScriptMethodAttribute' -MemberType 'ScriptMethod' -MemberName 'SetParameters' -Value {
 	param([Hashtable]$parameters, [System.Reflection.ICustomAttributeProvider]$attributeAppliedTo)
 	$this.PSBase.SetParameters($parameters, $attributeAppliedTo)
 	if ($this.Script) {
 		$parameters['Value'] = [ScriptBlock]::Create($this.Script)
 	}
 } -Force
-Update-TypeData -TypeName 'Stroniax.PowerShell.PSScriptPropertyAttribute' -MemberType 'ScriptMethod' -MemberName 'SetParameters' -Value {
+Update-TypeData -TypeName 'PSSharp.PSScriptPropertyAttribute' -MemberType 'ScriptMethod' -MemberName 'SetParameters' -Value {
 	param([Hashtable]$parameters, [System.Reflection.ICustomAttributeProvider]$attributeAppliedTo)
 	$this.PSBase.SetParameters($parameters, $attributeAppliedTo)
 	if ($this.GetScript) {
@@ -21,7 +21,7 @@ Update-TypeData -TypeName 'Stroniax.PowerShell.PSScriptPropertyAttribute' -Membe
 		$parameters['SecondValue'] = [ScriptBlock]::Create($this.SetScript)
 	}
 } -Force
-Update-TypeData -TypeName 'Stroniax.PowerShell.PSCodeMethodAttribute' -MemberType 'ScriptMethod' -MemberName 'SetParameters' -Value {
+Update-TypeData -TypeName 'PSSharp.PSCodeMethodAttribute' -MemberType 'ScriptMethod' -MemberName 'SetParameters' -Value {
 	param([Hashtable]$parameters, [System.Reflection.ICustomAttributeProvider]$attributeAppliedTo)
 	$this.PSBase.SetParameters($parameters, $attributeAppliedTo)
 	$Method = Get-MethodReference -TypeName $this.ReferencedTypeName -MethodName $this.ReferencedMethodName -MethodUse Method -ErrorAction Ignore
@@ -29,7 +29,7 @@ Update-TypeData -TypeName 'Stroniax.PowerShell.PSCodeMethodAttribute' -MemberTyp
 		$parameters['Value'] = $Method
 	}
 } -Force
-Update-TypeData -TypeName 'Stroniax.PowerShell.PSCodePropertyAttribute' -MemberType 'ScriptMethod' -MemberName 'SetParameters' -Value {
+Update-TypeData -TypeName 'PSSharp.PSCodePropertyAttribute' -MemberType 'ScriptMethod' -MemberName 'SetParameters' -Value {
 	param([Hashtable]$parameters, [System.Reflection.ICustomAttributeProvider]$attributeAppliedTo)
 	$this.PSBase.SetParameters($parameters, $attributeAppliedTo)
 	[System.Reflection.MethodInfo]$GetMethod = Get-MethodReference -TypeName $this.ReferencedGetTypeName -MethodName $this.ReferencedGetMethodName -MethodUse GetProperty -ErrorAction Ignore
@@ -41,7 +41,7 @@ Update-TypeData -TypeName 'Stroniax.PowerShell.PSCodePropertyAttribute' -MemberT
 		$parameters['SecondValue'] = $SetMethod
 	}
 } -Force
-Update-TypeData -TypeName 'Stroniax.PowerShell.PSCodePropertyFromExtensionMethodAttribute' -MemberType 'ScriptMethod' -MemberName 'SetParameters' -Value {
+Update-TypeData -TypeName 'PSSharp.PSCodePropertyFromExtensionMethodAttribute' -MemberType 'ScriptMethod' -MemberName 'SetParameters' -Value {
 	param([Hashtable]$parameters, [System.Reflection.ICustomAttributeProvider]$attributeAppliedTo)
 	$this.PSBase.SetParameters($parameters, $attributeAppliedTo)
 
@@ -92,7 +92,7 @@ Update-TypeData -TypeName 'Stroniax.PowerShell.PSCodePropertyFromExtensionMethod
 		$Params['Value'] = $GetMethod
 	}
 } -Force
-Update-TypeData -TypeName 'Stroniax.PowerShell.PSCodeMethodFromExtensionMethodAttribute' -MemberType 'ScriptMethod' -MemberName 'SetParameters' -Value {
+Update-TypeData -TypeName 'PSSharp.PSCodeMethodFromExtensionMethodAttribute' -MemberType 'ScriptMethod' -MemberName 'SetParameters' -Value {
 	param([Hashtable]$parameters, [System.Reflection.ICustomAttributeProvider]$attributeAppliedTo)
 	$this.PSBase.SetParameters($parameters, $attributeAppliedTo)
 
@@ -148,13 +148,13 @@ Update-TypeData -TypeName 'Stroniax.PowerShell.PSCodeMethodFromExtensionMethodAt
 
 # Pseudo-types defined via type data definitions assist argument completion.
 # Properties must be set before the type name is added to a PSCustomObject.
-Update-TypeData -TypeName 'Stroniax.PowerShell.Pseudo.PSTypeDataDefinition' -MemberType NoteProperty -MemberName 'AttributeDefinition' -Value $null -Force
-Update-TypeData -TypeName 'Stroniax.PowerShell.Pseudo.PSTypeDataDefinition' -MemberType NoteProperty -MemberName 'AttributeTarget' -Value $null -Force
+Update-TypeData -TypeName 'PSSharp.Pseudo.PSTypeDataDefinition' -MemberType NoteProperty -MemberName 'AttributeDefinition' -Value $null -Force
+Update-TypeData -TypeName 'PSSharp.Pseudo.PSTypeDataDefinition' -MemberType NoteProperty -MemberName 'AttributeTarget' -Value $null -Force
 
-Update-TypeData -TypeName 'Stroniax.PowerShell.Pseudo.PSTypeDataImportPreferenceItem' -MemberType NoteProperty -MemberName 'IsApplied' -Value $false -Force
-Update-TypeData -TypeName 'Stroniax.PowerShell.Pseudo.PSTypeDataImportPreferenceItem' -MemberType NoteProperty -MemberName 'CanImport' -Value $false -Force
-Update-TypeData -TypeName 'Stroniax.PowerShell.Pseudo.PSTypeDataImportPreferenceItem' -MemberType NoteProperty -MemberName 'Reason' -Value ([System.String]::Empty) -Force
-Update-TypeData -TypeName 'Stroniax.PowerShell.Pseudo.PSTypeDataImportPreferenceItem' -MemberType NoteProperty -MemberName 'AssemblyName' -Value ([System.String]::Empty) -Force
+Update-TypeData -TypeName 'PSSharp.Pseudo.PSTypeDataImportPreferenceItem' -MemberType NoteProperty -MemberName 'IsApplied' -Value $false -Force
+Update-TypeData -TypeName 'PSSharp.Pseudo.PSTypeDataImportPreferenceItem' -MemberType NoteProperty -MemberName 'CanImport' -Value $false -Force
+Update-TypeData -TypeName 'PSSharp.Pseudo.PSTypeDataImportPreferenceItem' -MemberType NoteProperty -MemberName 'Reason' -Value ([System.String]::Empty) -Force
+Update-TypeData -TypeName 'PSSharp.Pseudo.PSTypeDataImportPreferenceItem' -MemberType NoteProperty -MemberName 'AssemblyName' -Value ([System.String]::Empty) -Force
 #endregion
 
 #region runtime classes, internal functions & variables
@@ -181,7 +181,7 @@ enum PSTypeDataAutoImportPreference {
 # Preference settings indicating from which assemblies TypeData may or may not be imported.
 class PSTypeDataAutoImportSettings {
 	static PSTypeDataAutoImportSettings() {
-		[PSTypeDataAutoImportSettings]::SettingsFilePath = Join-Path $env:APPDATA -ChildPath 'Stroniax\Stroniax.PowerShell.TypeData\Configuration.PS1XML'
+		[PSTypeDataAutoImportSettings]::SettingsFilePath = Join-Path $env:APPDATA -ChildPath 'Stroniax\PSSharp.TypeData\Configuration.PS1XML'
 		[PSTypeDataAutoImportSettings]::Persistent = [PSTypeDataAutoImportSettings]::Import()
 		[PSTypeDataAutoImportSettings]::Current = [PSTypeDataAutoImportSettings]::Import()
 	}
@@ -383,6 +383,11 @@ function Test-TypeDataImportPreference {
 	Configure settings for how TypeData definitions are scanned and imported from assemblies.
 .EXAMPLE
 	PS C:\> Set-TypeDataImportSettings -AutoImportPreference Allowlist -AlwaysCheckAssemblies $false -Persist
+
+	Sets the current settings configuration to allow TypeData to be imported only from assemblies that have been
+	specifically allowed. If an assembly has already been checked in the past and was determined to not contain
+	TypeData definitions, it will be skipped. The Persist parameter sets these settings to also be used in other
+	PowerShell processes opened after running this function.
 .INPUTS
 	None
 .OUTPUTS
@@ -485,13 +490,13 @@ function Set-TypeDataImportSettings {
 .INPUTS
 	[System.Reflection.Assembly]
 .OUTPUTS
-	[Stroniax.PowerShell.Pseudo.PSTypeDataImportPreferenceItem]
+	[PSSharp.Pseudo.PSTypeDataImportPreferenceItem]
 .NOTES
 	
 #>
 function Get-TypeDataImportPreference {
 	[CmdletBinding()]
-	[OutputType('Stroniax.PowerShell.Pseudo.PSTypeDataImportPreferenceItem')]
+	[OutputType('PSSharp.Pseudo.PSTypeDataImportPreferenceItem')]
 	param(
 		[Parameter(ValueFromPipeline)]
 		[System.Reflection.Assembly[]]
@@ -525,7 +530,7 @@ function Get-TypeDataImportPreference {
 				CanImport 		=	$false
 				Reason			=	'Block'
 				AssemblyName	=	$_
-				PSTypeName = 'Stroniax.PowerShell.Pseudo.PSTypeDataImportPreferenceItem'
+				PSTypeName = 'PSSharp.Pseudo.PSTypeDataImportPreferenceItem'
 			}
 		}
 		[PSTypeDataAutoImportPreference]::Current.Allowlist.Where({LikeAny $_ $AssemblyName}) | ForEach-Object {
@@ -534,7 +539,7 @@ function Get-TypeDataImportPreference {
 				CanImport 		=	$true
 				Reason			=	'Allow'
 				AssemblyName	=	$_
-				PSTypeName = 'Stroniax.PowerShell.Pseudo.PSTypeDataImportPreferenceItem'
+				PSTypeName = 'PSSharp.Pseudo.PSTypeDataImportPreferenceItem'
 			}
 		}
 		[PSTypeDataAutoImportPreference]::Current.SkipList.Where({LikeAny $_ $AssemblyName}) | ForEach-Object {
@@ -543,13 +548,37 @@ function Get-TypeDataImportPreference {
 				CanImport 		=	$false
 				Reason			=	'Skip'
 				AssemblyName	=	$_
-				PSTypeName = 'Stroniax.PowerShell.Pseudo.PSTypeDataImportPreferenceItem'
+				PSTypeName = 'PSSharp.Pseudo.PSTypeDataImportPreferenceItem'
 			}
 		}
 	}
 }
 
 
+<#
+.SYNOPSIS
+	Resets all allow and block settings for assemblies.
+.DESCRIPTION
+	TypeData import preferences are used to determine from which assemblies TypeData may be imported. Different
+	settings (configured with Set-TypeDataImportSettings) will determine whether an assembly must be explicitly
+	added to an allow-list for the assembly to be imported, or whether the assembly must be added to a blocklist
+	to prevent importing it, as well as whether or not assemblies should be imported every time or if assemblies
+	previously determined to include no TypeData definitions can be skipped.
+
+	This function will reset all assemblies to the initial state which is undefined. To set the import preference
+	for a single assembly, use Set-TypeDataImportPreference.
+.EXAMPLE
+	PS C:\> Clear-TypeDataImportPreference -Persist
+	
+	After executing this function, opening a new PowerShell session and importing this module will cause all
+	assemblies to be imported as if no blocklist or allowlist has been defined, and no assemblies will be
+	skipped due to being in a known state.
+.INPUTS
+	None
+.OUTPUTS
+	None
+.NOTES
+#>
 function Clear-TypeDataImportPreference {
 	[CmdletBinding()]
 	param(
@@ -669,7 +698,7 @@ function Set-TypeDataImportPreference {
 	Retrieves TypeData definition attributes and the items to which they are applied.
 .DESCRIPTION
 .EXAMPLE
-	PS C:\> [Stroniax.PowerShell.PSScriptProperty('FullName', '$this.FirstName + '' '' + $this.LastName')] 
+	PS C:\> [PSSharp.PSScriptProperty('FullName', '$this.FirstName + '' '' + $this.LastName')] 
 	class MyPSType { [System.String]$FirstName; [System.String]$LastName }
 	PS C:\> Get-TypeDataDefinitions -Type [MyPSType]
 	
@@ -682,7 +711,7 @@ function Set-TypeDataImportPreference {
 #>
 function Get-TypeDataDefinitions {
 	[CmdletBinding(DefaultParameterSetName = 'AssemblySet')]
-	[OutputType('Stroniax.PowerShell.Pseudo.PSTypeDataDefinition')]
+	[OutputType('PSSharp.Pseudo.PSTypeDataDefinition')]
 	param(
 		# The assembly from which to retrieve TypeData definitions. The assembly and all types defined by the
 		# assembly will be scanned for TypeData definitions.
@@ -710,21 +739,21 @@ function Get-TypeDataDefinitions {
 	}
 	end {
 		if ($PSBoundParameters.ContainsKey('Assembly')) {
-			[Stroniax.PowerShell.PSTypeDataAttribute]::GetTypeDataDefinitions($Assembly).GetEnumerator() | ForEach-Object {
+			[PSSharp.PSTypeDataAttribute]::GetTypeDataDefinitions($Assembly).GetEnumerator() | ForEach-Object {
 				[PSCustomObject]@{
 					'AttributeDefinition' = $_.Key
 					'AttributeTarget' = $_.Value
-					'PSTypeName' = 'Stroniax.PowerShell.Pseudo.PSTypeDataDefinition'
+					'PSTypeName' = 'PSSharp.Pseudo.PSTypeDataDefinition'
 				}
 			}
 		}
 		elseif ($PSBoundParameters.ContainsKey('Type')) {
 			foreach ($t in $Types) {
-				[Stroniax.PowerShell.PSTypeDataAttribute]::GetTypeDataDefinitions($t).GetEnumerator() | ForEach-Object {
+				[PSSharp.PSTypeDataAttribute]::GetTypeDataDefinitions($t).GetEnumerator() | ForEach-Object {
 					[PSCustomObject]@{
 						'AttributeDefinition' = $_.Key
 						'AttributeTarget' = $_.Value
-						'PSTypeName' = 'Stroniax.PowerShell.Pseudo.PSTypeDataDefinition'
+						'PSTypeName' = 'PSSharp.Pseudo.PSTypeDataDefinition'
 					}
 				}
 			}
@@ -745,7 +774,7 @@ function Get-TypeDataDefinitions {
 				if (!(Test-TypeDataImportPreference -Assembly $asm)) {
 					continue
 				}
-				$Definitions = [Stroniax.PowerShell.PSTypeDataAttribute]::GetTypeDataDefinitions($asm)
+				$Definitions = [PSSharp.PSTypeDataAttribute]::GetTypeDataDefinitions($asm)
 				Write-Debug ("Assembly '$( $asm.GetName().Name )' contains $( $Definitions.Count ) TypeData definitions.")
 				if ($Definitions.Count -eq 0) {
 					if ($PersistentSettings.Value.BlockAfterFirstScan -and
@@ -761,7 +790,7 @@ function Get-TypeDataDefinitions {
 					[PSCustomObject]@{
 						'AttributeDefinition' = $_.Key
 						'AttributeTarget' = $_.Value
-						'PSTypeName' = 'Stroniax.PowerShell.Pseudo.PSTypeDataDefinition'
+						'PSTypeName' = 'PSSharp.Pseudo.PSTypeDataDefinition'
 					}
 				}
 			}
@@ -806,7 +835,7 @@ function Import-TypeDataDefinitions {
 						"applied to $( $TypeDataDefinition.AttributeTarget ).")
 			[System.Collections.Hashtable]$Params = @{}
 
-			if ($TypeDataDefinition.AttributeDefinition -is [Stroniax.PowerShell.PSTypeConverterAttribute]) {
+			if ($TypeDataDefinition.AttributeDefinition -is [PSSharp.PSTypeConverterAttribute]) {
 				if ($TypeDataDefinition.AttributeDefinition.CanConvertTypeNames) {
 					$ThisType = $TypeDataDefinition.AttributeTarget.FullName
 					foreach ($Type in $TypeDataDefinition.AttributeDefinition.CanConvertTypeNames) {
@@ -824,7 +853,7 @@ function Import-TypeDataDefinitions {
 					continue
 				}
 			}
-			elseif ($TypeDataDefinition.AttributeDefinition -is [Stroniax.PowerShell.PSTypeAdapterAttribute]) {
+			elseif ($TypeDataDefinition.AttributeDefinition -is [PSSharp.PSTypeAdapterAttribute]) {
 				if ($TypeDataDefinition.AttributeDefinition.CanAdaptTypeNames) {
 					$ThisType = $TypeDataDefinition.AttributeTarget.FullName
 					foreach ($Type in $TypeDataDefinition.AttributeDefinition.CanAdaptTypeNames) {
@@ -860,7 +889,7 @@ function Import-TypeDataDefinitions {
 			[System.Boolean]$IsErrorState = $false
 			if ([System.String]::IsNullOrWhiteSpace($Params['TypeName'])) {
 				# Update-TypeData requires the TypeName parameter.
-				$ex = [Stroniax.PowerShell.TypeDataDefinitionException]::new(
+				$ex = [PSSharp.TypeDataDefinitionException]::new(
 					'No type name was provided for the TypeData definition.', 
 					$Params['TypeName'], 
 					$Params['MemberType'], 
@@ -890,7 +919,7 @@ function Import-TypeDataDefinitions {
 						$Params.ContainsKey('TypeConverter') -or 
 						$Params.ContainsKey('TypeAdapter') -or
 						$Params.ContainsKey('DefaultDisplayPropertySet'))) {
-					$ex = [Stroniax.PowerShell.TypeDataDefinitionException]::new(
+					$ex = [PSSharp.TypeDataDefinitionException]::new(
 						'A TypeData attribute was present but the TypeData definition could not be determined.',
 						'Undefined',
 						$Params['TypeName'],
@@ -978,7 +1007,7 @@ function Import-TypeDataDefinitions {
 					}
 					default {
 						# Report error for unidentified member type
-						$ex = [Stroniax.PowerShell.TypeDataDefinitionException]::new(
+						$ex = [PSSharp.TypeDataDefinitionException]::new(
 							'A TypeData attribute was present but the TypeData definition could not be determined.',
 							'Undefined',
 							$Params['TypeName'],
@@ -1001,7 +1030,7 @@ function Import-TypeDataDefinitions {
 					}
 				}
 				if ($RequireMemberName -and [System.String]::IsNullOrWhiteSpace($Params['MemberName'])) {
-					$ex = [Stroniax.PowerShell.TypeDataDefinitionException]::new(
+					$ex = [PSSharp.TypeDataDefinitionException]::new(
 						'No member name was provided for the TypeData definition.',
 						$Params['TypeName'],
 						$Params['MemberType'],
@@ -1022,7 +1051,7 @@ function Import-TypeDataDefinitions {
 				}
 				if ($RequireValue -and $null -eq $Params['Value']) {
 					if ($RequireCodeReference) {
-						$ex = [Stroniax.PowerShell.TypeDataDefinitionException]::new(
+						$ex = [PSSharp.TypeDataDefinitionException]::new(
 							'No code reference could be identified. The referenced method must be static and ' +
 							'the first parameter must be of type [System.Management.Automation.PSObject].',
 							$Params['TypeName'],
@@ -1044,7 +1073,7 @@ function Import-TypeDataDefinitions {
 						$IsErrorState = $true
 					}
 					elseif ($RequireGetCodeReference) {
-						$ex = [Stroniax.PowerShell.TypeDataDefinitionException]::new(
+						$ex = [PSSharp.TypeDataDefinitionException]::new(
 							'No code reference could be identified. The referenced method must be static and ' +
 							'must have a single parameter of type [System.Management.Automation.PSObject].',
 							$Params['TypeName'],
@@ -1066,7 +1095,7 @@ function Import-TypeDataDefinitions {
 						$IsErrorState = $true
 					}
 					else {
-						$ex = [Stroniax.PowerShell.TypeDataDefinitionException]::new(
+						$ex = [PSSharp.TypeDataDefinitionException]::new(
 							'No value was provided for the TypeData definition.',
 							$Params['TypeName'],
 							$Params['MemberType'],
@@ -1091,7 +1120,7 @@ function Import-TypeDataDefinitions {
 						$Params['Value'].GetProperties().Count -lt 1 -or
 						$Params['Value'].GetProperties()[0].ParameterType -ne [System.Management.Automation.PSObject]
 					)) {
-					$ex = [Stroniax.PowerShell.TypeDataDefinitionException]::new(
+					$ex = [PSSharp.TypeDataDefinitionException]::new(
 						'No code reference could be identified. The referenced method must be static and ' +
 						'the first parameter must be of type [System.Management.Automation.PSObject].',
 						$Params['TypeName'],
@@ -1117,7 +1146,7 @@ function Import-TypeDataDefinitions {
 						$Params['Value'].GetProperties().Count -ne 1 -or
 						$Params['Value'].GetProperties()[0].ParameterType -ne [System.Management.Automation.PSObject]
 					)) {
-					$ex = [Stroniax.PowerShell.TypeDataDefinitionException]::new(
+					$ex = [PSSharp.TypeDataDefinitionException]::new(
 						'No code reference could be identified. The referenced method must be static and ' +
 						'must have a single parameter of type [System.Management.Automation.PSObject].',
 						$Params['TypeName'],
@@ -1146,7 +1175,7 @@ function Import-TypeDataDefinitions {
 						$Params['SecondValue'].GetProperties()[1].ParameterType -ne
 						$Params['Value'].ReturnType
 					)) {
-					$ex = [Stroniax.PowerShell.TypeDataDefinitionException]::new(
+					$ex = [PSSharp.TypeDataDefinitionException]::new(
 						'No code reference could be identified. The referenced method must be static, the first' +
 						'parameter must be of type [System.Management.Automation.PSObject], and the second' +
 						'parameter must be of the return type of the referenced Get method.',
@@ -1189,7 +1218,7 @@ add-type -TypeDefinition @'
 using System;
 using System.Collections.Generic;
 using System.Management.Automation;
-namespace Stroniax.PowerShell.Runtime {
+namespace PSSharp.Runtime {
 	public static class SubscribeJoblessAssemblyLoadEvent {
 		public static void Subscribe(ScriptBlock script) {
 			AppDomain.CurrentDomain.AssemblyLoad += (a,b) => {
@@ -1203,7 +1232,7 @@ namespace Stroniax.PowerShell.Runtime {
 	}
 }
 '@
-[Stroniax.PowerShell.Runtime.SubscribeJoblessAssemblyLoadEvent]::Subscribe({
+[PSSharp.Runtime.SubscribeJoblessAssemblyLoadEvent]::Subscribe({
 	if (Test-TypeDataImportPreference -Assembly $_.LoadedAssembly) {
 		Import-TypeDataDefinitions -Assembly $_.LoadedAssembly
 	}

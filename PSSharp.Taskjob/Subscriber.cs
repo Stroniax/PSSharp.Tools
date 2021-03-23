@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Stroniax.PowerShell
+namespace PSSharp
 {
     internal class Subscriber : IDisposable
     {

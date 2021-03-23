@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace Stroniax.Powershell
+namespace PSSharp
 {
     [Serializable]
     public class TypeDataDefinitionException : Exception

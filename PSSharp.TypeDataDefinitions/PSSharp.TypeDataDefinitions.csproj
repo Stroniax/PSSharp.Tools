@@ -2,15 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-	  <RootNamespace>Stroniax.Powershell</RootNamespace>
+	  <RootNamespace>PSSharp</RootNamespace>
 	  <LangVersion>8.0</LangVersion>
 	  <Nullable>enable</Nullable>
-	  <PSModuleName>Stroniax.PowerShell.TypeData</PSModuleName>
+	  <PSModuleName>PSSharp.TypeDataDefinitions</PSModuleName>
 	  <PSDebugScript Condition="'$(DebugScript)'==''">$(ProjectDir)Debug.ps1</PSDebugScript>
 	  <PSPrebuildScript Condition="'$(PrebuildScript)'==''">$(ProjectDir)Prebuild.ps1</PSPrebuildScript>
 	  <PSPostbuildScript Condition="'$(PostbuildScript)'==''">$(ProjectDir)Postbuild.ps1</PSPostbuildScript>
 	  <PowerShellPath>%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe</PowerShellPath>
-	  <ModuleName>KPBSD.ITMS</ModuleName>
   </PropertyGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
@@ -22,7 +21,7 @@
   </Target>
 
   <ItemGroup>
-    <None Update="Stroniax.PowerShell.TypeData.psm1">
+    <None Update="PSSharp.TypeDataDefinitions.psm1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

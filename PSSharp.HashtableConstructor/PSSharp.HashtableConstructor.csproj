@@ -2,13 +2,13 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<RootNamespace>Stroniax.Powershell</RootNamespace>
+		<RootNamespace>PSSharp</RootNamespace>
 		<LangVersion>8.0</LangVersion>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-	  <DocumentationFile>Stroniax.PowerShell.HashtableExtensions.xml</DocumentationFile>
+	  <DocumentationFile>PSSharp.HashtableConstructor.xml</DocumentationFile>
 	</PropertyGroup>
 
 </Project>

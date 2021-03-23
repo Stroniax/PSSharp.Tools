@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace Stroniax.Powershell
+namespace PSSharp
 {
     public abstract class PSTypeDataAttribute : Attribute
     {

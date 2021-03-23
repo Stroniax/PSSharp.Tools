@@ -1,4 +1,4 @@
-﻿using Stroniax.PowerShell.Extensions;
+﻿using PSSharp.Extensions;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -9,7 +9,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Stroniax.PowerShell.Commands
+namespace PSSharp.Commands
 {
     /// <summary>
     /// A PowerShell cmdlet base for a cmdlet that performs an asynchronous operation. 

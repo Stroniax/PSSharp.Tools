@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Management.Automation;
 using System.Text;
 
-namespace Stroniax.Powershell
+namespace PSSharp
 {
     // note that you can't derive from ValidateArgumentsAttribute as you need to catch the value
     // before it has been converted. ArgumentTransformationAttributes are applied before the

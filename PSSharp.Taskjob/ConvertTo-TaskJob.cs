@@ -4,7 +4,7 @@ using System.Management.Automation;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Stroniax.PowerShell.Commands
+namespace PSSharp.Commands
 {
     /// <summary>
     /// <para type='synopsis'>Creates a PowerShell job wrapper around a <see cref="System.Threading.Tasks.Task"/></para>.

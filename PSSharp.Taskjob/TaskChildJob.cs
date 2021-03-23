@@ -1,4 +1,4 @@
-﻿using Stroniax.PowerShell.Extensions;
+﻿using PSSharp.Extensions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Management.Automation;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Stroniax.PowerShell
+namespace PSSharp
 {
     /// <summary>
     /// A PowerShell job representing a single <see cref="Task"/>.

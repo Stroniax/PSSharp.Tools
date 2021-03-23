@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "Stroniax.PowerShell.TypeDataExtensions": {
+    "PSSharp.TypeDataExtensions": {
       "commandName": "Executable",
       "executablePath": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
       "commandLineArgs": "-noexit -command & $(ProjectDir)Debug.ps1 -Configuration $(ConfigurationName) -ProjectName $(ProjectName) -TargetName $(TargetName) -TargetPath $(TargetPath) -TargetDirectory $(TargetDir) -ProjectDirectory $(ProjectDir) -ModuleName $(PSModuleName)"

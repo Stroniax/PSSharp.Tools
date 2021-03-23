@@ -5,7 +5,7 @@ using System.Management.Automation;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Stroniax.PowerShell
+namespace PSSharp
 {
     /// <summary>
     /// An asynchronous action to be invoked by a task job that grants access to the job's streams.

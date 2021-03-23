@@ -28,7 +28,7 @@ Write-Host "Executing Post-Build: creating module '$ModuleName'."
 $Config['ModuleName'] = $ModuleName
 $Config['RootModule'] = "$ModuleName.psm1"
 $Config['ModuleDirectory'] = Join-Path $TargetDirectory -ChildPath $Config['ModuleName']
-$Config['PrivateCommands'] = @()
+$Config['PrivateCommands'] = @('Get-MethodReference', 'Test-TypeDataImportPreference')
 
 # Identify files not in the output directory that should be copied upon module build
 # for each item here, Get-ChildItem is run with the parameters of an entry in this list.
