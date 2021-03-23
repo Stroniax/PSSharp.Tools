@@ -148,79 +148,88 @@ Update-TypeData -TypeName 'Stroniax.PowerShell.PSCodeMethodFromExtensionMethodAt
 
 # Pseudo-types defined via type data definitions assist argument completion.
 # Properties must be set before the type name is added to a PSCustomObject.
-Update-TypeData -TypeName 'Stroniax.PowerShell.PSTypeDataDefinition' -MemberType NoteProperty -MemberName 'AttributeDefinition' -Value $null -Force
-Update-TypeData -TypeName 'Stroniax.PowerShell.PSTypeDataDefinition' -MemberType NoteProperty -MemberName 'AttributeTarget' -Value $null -Force
+Update-TypeData -TypeName 'Stroniax.PowerShell.Pseudo.PSTypeDataDefinition' -MemberType NoteProperty -MemberName 'AttributeDefinition' -Value $null -Force
+Update-TypeData -TypeName 'Stroniax.PowerShell.Pseudo.PSTypeDataDefinition' -MemberType NoteProperty -MemberName 'AttributeTarget' -Value $null -Force
+
+Update-TypeData -TypeName 'Stroniax.PowerShell.Pseudo.PSTypeDataImportPreferenceItem' -MemberType NoteProperty -MemberName 'IsApplied' -Value $false -Force
+Update-TypeData -TypeName 'Stroniax.PowerShell.Pseudo.PSTypeDataImportPreferenceItem' -MemberType NoteProperty -MemberName 'CanImport' -Value $false -Force
+Update-TypeData -TypeName 'Stroniax.PowerShell.Pseudo.PSTypeDataImportPreferenceItem' -MemberType NoteProperty -MemberName 'Reason' -Value ([System.String]::Empty) -Force
+Update-TypeData -TypeName 'Stroniax.PowerShell.Pseudo.PSTypeDataImportPreferenceItem' -MemberType NoteProperty -MemberName 'AssemblyName' -Value ([System.String]::Empty) -Force
 #endregion
 
-#region internal classes, functions, & variables
+#region runtime classes, internal functions & variables
 
 # Type names that have been used for dynamically generated types to construct CodeMethod wrappers around extension methods.
 $script:PSExtensionCodeMethodTypes = @()
 
-# A class with two singleton instances to configure the settings for reading TypeData definitions from assemblies or types.
-class PSTypeDataDefinitionSettings {
-	static PSTypeDataDefinitionSettings() {
-		[PSTypeDataDefinitionSettings]::SettingsFilePath = Join-Path $env:APPDATA -ChildPath 'Stroniax\Stroniax.PowerShell.TypeData\Configuration.PS1XML'
-		[PSTypeDataDefinitionSettings]::Persistent = [PSTypeDataDefinitionSettings]::Import()
-		[PSTypeDataDefinitionSettings]::Current = [PSTypeDataDefinitionSettings]::Import()
+
+# Preference setting options to indicate from which assemblies TypeData will be imported.
+enum PSTypeDataAutoImportPreference {
+	# TypeData will be imported from every assembly that is imported into the application domain.
+	All
+	# TypeData will be imported from every assembly that is imported into the application domain
+	# except in cases where the assembly has been explicitly excluded.
+	Blocklist
+	# TypeData will not be imported from any assembly unless that assembly has been added
+	# to an explicit whitelist.
+	Allowlist
+	# TypeData will not be automatically imported into the session.
+	None
+}
+
+
+# Preference settings indicating from which assemblies TypeData may or may not be imported.
+class PSTypeDataAutoImportSettings {
+	static PSTypeDataAutoImportSettings() {
+		[PSTypeDataAutoImportSettings]::SettingsFilePath = Join-Path $env:APPDATA -ChildPath 'Stroniax\Stroniax.PowerShell.TypeData\Configuration.PS1XML'
+		[PSTypeDataAutoImportSettings]::Persistent = [PSTypeDataAutoImportSettings]::Import()
+		[PSTypeDataAutoImportSettings]::Current = [PSTypeDataAutoImportSettings]::Import()
 	}
 	# Should be called before updating the persistent scope in case any changes have been made in another process.
 	hidden static [void] ReloadPersistentScope() {
-		[PSTypeDataDefinitionSettings]::Persistent = [PSTypeDataDefinitionSettings]::Import()
+		[PSTypeDataAutoImportSettings]::Persistent = [PSTypeDataAutoImportSettings]::Import()
 	}
-	hidden static [PSTypeDataDefinitionSettings] Import() {
+	hidden static [PSTypeDataAutoImportSettings] Import() {
 		$ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
-		if (Test-Path ([PSTypeDataDefinitionSettings]::SettingsFilePath)) {
-			return [PSTypeDataDefinitionSettings](Import-Clixml ([PSTypeDataDefinitionSettings]::SettingsFilePath))
+		if (Test-Path ([PSTypeDataAutoImportSettings]::SettingsFilePath)) {
+			return [PSTypeDataAutoImportSettings](Import-Clixml ([PSTypeDataAutoImportSettings]::SettingsFilePath))
 		}
 		else {
-			return [PSTypeDataDefinitionSettings]::new()
+			return [PSTypeDataAutoImportSettings]::new()
 		}
 	}
 	# Should be called on the Persistent instance after making any changes to the instance.
 	# Do not call this method on the Current instance.
 	[void] Save() {
-		[System.String]$ParentPath = Split-Path -Path ([PSTypeDataDefinitionSettings]::SettingsFilePath) -Parent
+		[System.String]$ParentPath = Split-Path -Path ([PSTypeDataAutoImportSettings]::SettingsFilePath) -Parent
 		if (!(Test-Path $ParentPath)) {
 			New-Item -Path $ParentPath -ItemType Directory
 		}
-		$this | Export-Clixml -Path ([PSTypeDataDefinitionSettings]::SettingsFilePath) -Force
+		$this | Export-Clixml -Path ([PSTypeDataAutoImportSettings]::SettingsFilePath) -Force
 	}
-	hidden static [PSTypeDataDefinitionSettings]$Persistent;
-	hidden static [PSTypeDataDefinitionSettings]$Current;
+	hidden static [PSTypeDataAutoImportSettings]$Persistent;
+	hidden static [PSTypeDataAutoImportSettings]$Current;
 	hidden static [System.String]$SettingsFilePath;
 
-	# True indicates that assemblies and types should by default NOT be read for TypeData definition attributes.
-	[System.Boolean]$BlockUnlessAllowed = $true;
-	# True indicates that an assembly that does not contain TypeData definition attributes should be added to a
-	# list of assemblies to avoid scanning. This can cause significant performance improvements.
-	[System.Boolean]$BlockAfterFirstScan = $true;
+	# Determines from which assemblies TypeData definitions will be imported.
+	[PSTypeDataAutoImportPreference]$AutoImportPreference = [PSTypeDataAutoImportPreference]::Allowlist
+	# Determines if an assembly can be skipped if it was previously determined that it does not
+	# contain TypeData definitions.
+	[System.Boolean]$AlwaysCheckAssemblies = $false
 	# The assemblies to allow TypeData to be imported from when (BlockUnlessAllowed -eq $true).
-	[System.String[]]$AssembliesAllowed = @();
+	[System.String[]]$AllowList = @();
 	# The assemblies specifically excluded from being read for TypeData definition attributes. Note that the
 	# data in these assemblies will still be read if the assembly is passed directly to Import-TypeData, but
 	# will not be read by default when this module is imported or Import-TypeData is invoked with no arguments.
-	[System.String[]]$AssembliesBlocked = @();
+	[System.String[]]$BlockList = @();
 	# Assemblies that were previously determined to have no TypeData definition attributes and therefore
 	# do not need to be scanned next time the assembly is imported. This value is ignored when 
 	# ($BlockAfterFirstScan -eq $false).
-	[System.String[]]$AssembliesOmitted = @();
+	[System.String[]]$SkipList = @();
 }
 
 
-class PSTypeDataConfigurationItem {
-	PSTypeDataConfigurationItem([System.String]$type, [System.String]$assembly, [System.Boolean]$blocked, [System.String]$reason) {
-		$This.TypeName = $type
-		$This.AssemblyName = $assembly
-		$This.Reason = $reason
-	}
-	[System.String]$TypeName
-	[System.String]$AssemblyName
-	[System.Boolean]$Blocked
-	[System.String]$Reason
-}
-
-
+# Quick & simple parameter transformation. Why does PowerShell not include this by default?
 class TransformationScriptAttribute : System.Management.Automation.ArgumentTransformationAttribute {
 	[ScriptBlock]$ScriptBlock
 	TransformationScriptAttribute([ScriptBlock]$ScriptBlock) {
@@ -228,7 +237,7 @@ class TransformationScriptAttribute : System.Management.Automation.ArgumentTrans
 	}
 	[System.Object] Transform([System.Management.Automation.EngineIntrinsics]$engineIntrinsics, [System.Object]$inputData) 
 	{
-		return $this.ScriptBlock.InvokeWithContext(
+		$collection = $this.ScriptBlock.InvokeWithContext(
 			$null, # FunctionsToDefine
 			@(
 				[psvariable]::new('_', $inputData), # assign $PSItem to allow quick processing without named args,
@@ -239,49 +248,67 @@ class TransformationScriptAttribute : System.Management.Automation.ArgumentTrans
 			$engineIntrinsics,
 			$inputData
 		)
+		if ($collection.Count -eq 1) {
+			return $collection[0]
+		}
+		$output = [object[]]::new($collection.Count)
+		for($i=0;$i-lt$collection.Count;$i++) {
+			$output[$i] = $collection[$i]
+		}
+		return $output
 	}
 }
+
 
 <#
 .SYNOPSIS
 	Returns a [System.Reflection.MethodInfo] instance that references a method for a CodeProperty or CodeMethod type extension.
+
+	$null will be returned if the referenced method cannot be found.
 .OUTPUTS
 	[System.Reflection.MethodInfo]
 .NOTES
-	Intended only for internal use by this module.
+	This is a helper function and should not be exposed by the module.
 #>
 function Get-MethodReference {
 	[CmdletBinding()]
 	[OutputType([System.Reflection.MethodInfo])]
 	param(
+		 # The attribute may have been passed $null for TypeName and MethodName. Ensure that this will not
+		 # throw an exception that can't be concealed by the function.
+
+		 # The name of the type that defines the referenced method.
 		[Parameter(Mandatory)]
-		[AllowEmptyString()] # avoid exception when calling function
+		[AllowEmptyString()]
 		[AllowNull()]
 		[System.String]
 		$TypeName,
 
+		# The name of the referenced method.
 		[Parameter(Mandatory)]
 		[System.String]
-		[AllowEmptyString()] # avoid exception when calling function
+		[AllowEmptyString()]
 		[AllowNull()]
 		$MethodName,
 
+		# The intended use of the method. Used to identify the proper method if multiple overloads are defined.
 		[Parameter(Mandatory)]
 		[ValidateSet('GetProperty', 'SetProperty', 'Method')]
 		[System.String]$MethodUse
 	)
 	process {
-		if ([System.String]::IsNullOrWhiteSpace($TypeName) -and [System.String]::IsNullOrWhiteSpace($MethodName)) {
+		if ([System.String]::IsNullOrWhiteSpace($TypeName) -or
+			[System.String]::IsNullOrWhiteSpace($MethodName)) {
 			return $null
 		}
 		[System.Type] $Type = [System.Type]$TypeName
 		[System.Reflection.MethodInfo[]]$Methods = $Type.GetMethods() | Where-Object { $_.Name -eq $MethodName }
 		[System.Int16]$ExpectedParameterCount = if ($MethodUse -eq 'GetProperty') { 1 }
-		elseif ($MethodUse -eq 'SetProperty') { 2 }
-		else { -1 }
+												elseif ($MethodUse -eq 'SetProperty') { 2 }
+												else { -1 }
 		[System.Reflection.MethodInfo]$Method = $Methods `
 		| Where-Object { 
-			$Parameters = $_.GetParameters();
+			$Parameters = $_.GetParameters()
 			return (
 				($ExpectedParameterCount -eq -1 -and $Parameters.Count -ge 1) -or 
 				($Parameters.Count -eq $ExpectedParameterCount)
@@ -294,6 +321,57 @@ function Get-MethodReference {
 	}
 }
 
+
+<#
+.SYNOPSIS
+	Determines if an assembly should be automatically imported according to the current PSTypeDataAutoImportSettings.
+.EXAMPLE
+	PS C:\> Test-TypeDataImportPreference -Assembly ([System.String].Assembly)
+	False
+
+	The function is used to determine if an assembly should be automatically imported. In the case of the assembly
+	in which System.String is defined, in most cases the assembly will be excluded and therefore the result will
+	be false.
+.INPUTS
+	[System.Reflection.Assembly]
+.OUTPUTS
+	[System.Boolean]
+.NOTES
+	This is a helper function and should not be exposed by the module.
+#>
+function Test-TypeDataImportPreference {
+	[CmdletBinding()]
+	[OutputType([System.Boolean])]
+	param(
+		[Parameter(Mandatory, ValueFromPipeline)]
+		[System.Reflection.Assembly]
+		$Assembly
+	)
+	process {
+		Set-StrictMode -Version 2
+		[PSTypeDataAutoImportSettings]$Settings = [PSTypeDataAutoImportSettings]::Current
+		if ($Assembly.FullName -in $Settings.SkipList -and -not $Settings.AlwaysCheckAssemblies) {
+			return $false
+		}
+		switch ($Settings.AutoImportPreference) {
+			([PSTypeDataAutoImportPreference]::All) {
+				return $true
+			}
+			([PSTypeDataAutoImportPreference]::Blocklist) {
+				return -not [System.Boolean]($Assembly.FullName -in $Settings.BlockList)
+			}
+			([PSTypeDataAutoImportPreference]::Allowlist) {
+				return [System.Boolean]($Assembly.FullName -in $Settings.AllowList)
+			}
+			([PSTypeDataAutoImportPreference]::None) {
+				return $false
+			}
+			default {
+				return $false
+			}
+		}
+	}
+}
 #endregion
 
 #region Functions
@@ -304,81 +382,87 @@ function Get-MethodReference {
 .DESCRIPTION
 	Configure settings for how TypeData definitions are scanned and imported from assemblies.
 .EXAMPLE
-	PS C:\> Set-TypeDataDefinitionSettings -BlockByDefault $false -BlockAfterFirstScan $true
-	
-	In the next PowerShell session this module is imported into, all assemblies loaded into
-	the application domain will be scanned unless the have previously been scanned for TypeData
-	definitions and found without any.
+	PS C:\> Set-TypeDataImportSettings -AutoImportPreference Allowlist -AlwaysCheckAssemblies $false -Persist
 .INPUTS
-	
+	None
 .OUTPUTS
-	
+	None
 .NOTES
-	
+	Settings are managed via two singleton instances of the [PSTypeDataAutoImportSettings] class.
+	One instance represents the "Current" settings, which override the settings of the second instance.
+	The second instance represents the "Persistent" settings, and is the value that "Default" will
+	initially be set to in a given PowerShell session.
+
+	This function can set both, but will only set the current settings unless the -Persist SwitchParameter
+	is $true.
 #>
-function Set-TypeDataDefinitionsSettings {
+function Set-TypeDataImportSettings {
 	[CmdletBinding(SupportsShouldProcess)]
 	param(
-		# Set whether assemblies and types should by default be blocked, and only be scanned and have data imported
-		# if explicitly allowed.
-		[Parameter()]
-		[System.Boolean]$BlockByDefault,
+		# Set the automatic import behavior for TypeData definitions.
+		# All       - TypeData will be imported from every assembly that is imported into the application domain.
+		# Blocklist - TypeData will be imported from every assembly that is imported into the application domain
+		#             except in cases where the assembly has been explicitly excluded.
+		# Allowlist - TypeData will not be imported from any assembly unless that assembly has been added
+		#             to an explicit whitelist.
+		# None      - TypeData will not be automatically imported into the session.
+		[Parameter(ValueFromPipelineByPropertyName)]
+		[PSTypeDataAutoImportPreference]
+		$AutoImportPreference,
 
-		# Set whether types and assemblies should be blocked (preventing TypeData definitions from being searched 
-		# for and imported on these members) after the type or assembly has been scanned once and found to have
-		# no TypeData definitions.
-		[Parameter()]
-		[System.Boolean]$BlockAfterFirstScan,
+		# Determines if assemblies that do not define TypeData should be cached to avoid searching for definitions
+		# within a given assembly in the future, or should always be searched for TypeData definitions.
+		[Parameter(ValueFromPipelineByPropertyName)]
+		[System.Boolean]
+		$AlwaysCheckAssemblies,
 
-		# Determines whether the configured settings should be persisted between sessions.
+		# Determines whether the configured settings should be persisted between sessions or only apply to the
+		# current session.
 		[Parameter()]
 		[System.Management.Automation.SwitchParameter]$Persist
 	)
 	process {
 		Set-StrictMode -Version 2
-		[System.Boolean]$PersistentScopeModified = $false;
-		[PSTypeDataDefinitionSettings]::ReloadPersistentScope();
-		if ($PSBoundParameters.ContainsKey("BlockByDefault")) {
-			[System.String]$action = $null
-			if ($BlockByDefault) {
-				$action = if ($Persist) { "Block automatic scanning of assemblies and types for type data to import. (This setting will be persistent.)" }
-				else { "Block automatic scanning of assemblies and types for type data to import. (This setting will apply only to the current session.)" }
-			}
-			else {
-				$action = if ($Persist) { "Allow automamtic scanning of assemblies and types for type data to import. (This setting will be persistent and may cause undesired code to execute.)" }
-				else { "Allow automatic scanning of assemblies and types for type data to import. (This setting will apply only to the current session and may cause undesired code to execute.)" }
-			}
-			if ($PSCmdlet.ShouldProcess($action, $action, "Block Automatic TypeData Scan/Import")) {
-				[PSTypeDataDefinitionSettings]::Current.BlockUnlessAllowed = $BlockByDefault
-				if ($Persist -and [PSTypeDataDefinitionSettings]::Persistent.BlockUnlessAllowed -ne $BlockByDefault) {
-					[PSTypeDataDefinitionSettings]::Persistent.BlockUnlessAllowed = $BlockByDefault
-					$PersistentScopeModified = $true
+		[PSTypeDataAutoImportSettings]$Current = [PSTypeDataAutoImportSettings]::Current
+		if ($PSBoundParameters.ContainsKey("AutoImportPreference")) {
+			[System.String]$WhatIfAction = $null
+			[System.String]$ConfirmAction = $null
+			switch ($AutoImportPreference) {
+				([PSTypeDataAutoImportPreference]::All) {
+					$WhatIfAction = 'Setting TypeData AutoImportPreference to ''All'' (TypeData will be automaticallly imported from every assembly).'
+					$ConfirmAction = 'Set TypeData AutoImportPreference to ''All''? (TypeData will be able to be automatically imported from every assembly.)'
+				}
+				([PSTypeDataAutoImportPreference]::Blocklist) {
+					$WhatIfAction = 'Setting TypeData AutoImportPreference to ''Blocklist'' (TypeData will be automatically imported from every assembly unless specifically restricted).'
+					$ConfirmAction = 'Set TypeData AutoImportPreference to ''Blocklist''? (TypeData will be able to be automatically imported from every assembly unless specifically restricted.)'
+				}
+				([PSTypeDataAutoImportPreference]::Allowlist) {
+					$WhatIfAction = 'Setting TypeData AutoImportPreference to ''Allowlist'' (TypeData will automatically be imported only from specifically enabled assemblies).'
+					$ConfirmAction = 'Set TypeData AutoImportPreference to ''Allowlist''? (TypeData will automatically be imported only from specifically enabled assemblies.)'
+				}
+				([PSTypeDataAutoImportPreference]::None) {
+					$WhatIfAction = 'Setting TypeData AutoImportPreference to ''None'' (TypeData will not be automatically imported).'
+					$ConfirmAction = 'Set TypeData AutoImportPreference to ''None''? (TypeData will not be automatically imported.)'
 				}
 			}
-		}
-		if ($PSBoundParameters.ContainsKey("BlockAfterFirstScan")) {
-			[System.String]$action = $null
-			if ($BlockAfterFirstScan) {
-				$action = if ($Persist) { "Avoid scanning assemblies for type data if an assembly has been scanned in the past without type data. (This setting will be persistent.)" }
-				else { "Avoid scanning assemblies for type data if an assembly has been scanned in the past without type data. (This setting will apply only to the current session.)" }
+			if ($PSCmdlet.ShouldProcess($WhatIfAction, $ConfirmAction, "Set AutoImportPreference")) {
+				$Current.AutoImportPreference = $AutoImportPreference
 			}
-			else {
-				$action = if ($Persist) { "Scan assemblies for type data even if the assembly was formerly determined not to define any TypeData definitions. (This setting will be persistent and may decrease performance.)" }
-				else { "Scan assemblies for type data even if the assembly was formerly determined not to define any TypeData definitions. (This setting will apply only to the current session and may decrease performance.)" }
-			}
-			if ($PSCmdlet.ShouldProcess($action, $action, "Block After First Scan if No Type Definitions")) {
-				[PSTypeDataDefinitionSettings]::Current.BlockAfterFirstScan = $BlockAfterFirstScan
-				if ($Persist -and [PSTypeDataDefinitionSettings]::Persistent.BlockAfterFirstScan -ne $BlockAfterFirstScan) {
-					[PSTypeDataDefinitionSettings]::Persistent.BlockAfterFirstScan = $BlockAfterFirstScan
-					$PersistentScopeModified = $true
-				}
+			if ($Persist) {
+				[PSTypeDataAutoImportSettings]::ReloadPersistentScope()
+				[PSTypeDataAutoImportSettings]::Persistent.AutoImportPreference = $AutoImportPreference
+				[PSTypeDataAutoImportSettings]::Persistent.Save()
 			}
 		}
-
-		if ($PersistentScopeModified) {
-			$ConfirmPreference = [System.Management.Automation.ConfirmImpact]::None
-			$WhatIfPreference = [System.Management.Automation.ConfirmImpact]::None
-			[PSTypeDataDefinitionSettings]::Persistent.Save();
+		if ($PSBoundParameters.ContainsKey("AlwaysCheckAssemblies")) {
+			if ($PSCmdlet.ShouldProcess($AlwaysCheckAssemblies, 'set AlwaysCheckAssemblies for TypeData')) {
+				$Current.AlwaysCheckAssemblies = $AlwaysCheckAssemblies
+			}
+			if ($Persist) {
+				[PSTypeDataAutoImportSettings]::ReloadPersistentScope()
+				[PSTypeDataAutoImportSettings]::Persistent.AlwaysCheckAssemblies = $AlwaysCheckAssemblies
+				[PSTypeDataAutoImportSettings]::Persistent.Save()
+			}
 		}
 	}
 }
@@ -386,149 +470,194 @@ function Set-TypeDataDefinitionsSettings {
 
 <#
 .SYNOPSIS
-	Retrieves the names of the types and assemblies are excluded from being scanning for type data.
+	Retrieves the assemblies which have import preferences set.
 .DESCRIPTION
 	
 .EXAMPLE
-	PS C:\> <example usage>
-	Explanation of what the example does
+	PS C:\> Get-TypeDataImportPreference -AssemblyName ([System.String].Assembly.FullName)
+	
+	IsApplied CanImport Reason  		   AssemblyName
+	--------- --------- ------     		   --------------
+	True	  False		TypeDataNotDefined mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+
+	This example demonstrates use of the command to see what the current import preference settings
+	result in for the assembly that defines the type [System.String].
 .INPUTS
-	Inputs (if any)
+	[System.Reflection.Assembly]
 .OUTPUTS
-	Output (if any)
+	[Stroniax.PowerShell.Pseudo.PSTypeDataImportPreferenceItem]
 .NOTES
-	General notes
+	
 #>
-function Get-TypeDataDefinitionsExclusion {
+function Get-TypeDataImportPreference {
 	[CmdletBinding()]
-	[OutputType([PSTypeDataConfigurationItem])]
-	param()
+	[OutputType('Stroniax.PowerShell.Pseudo.PSTypeDataImportPreferenceItem')]
+	param(
+		[Parameter(ValueFromPipeline)]
+		[System.Reflection.Assembly[]]
+		$Assembly,
+
+		[Parameter()]
+		[SupportsWildcards()]
+		[System.String[]]
+		$AssemblyName
+	)
+	begin {
+		function LikeAny([System.String]$value, [System.String[]]$wildcards) {
+			if ($null -eq $wildcards -or $wildcards.Count -eq 0) {
+				return $true
+			}
+			foreach ($wc in $wildcards) {
+				if ($value -like $wc) {
+					return $true
+				}
+			}
+			return $false
+		}
+	}
 	process {
-		foreach ($assembly in [PSTypeDataDefinitionSettings]::Current.AssembliesBlocked) {
-			[PSTypeDataConfigurationItem]::new(
-				$null,
-				$assembly,
-				$true,
-				"Block-TypeDataDefinitions"
-			)
+		if ($PSBoundParameters.ContainsKey('Assembly')) {
+			$AssemblyName = $Assembly | Select-Object -ExpandProperty FullName
 		}
-		foreach ($type in [PSTypeDataDefinitionSettings]::Current.TypesBlocked) {
-			[PSTypeDataConfigurationItem]::new(
-				$type,
-				$null,
-				$true,
-				"Block-TypeDataDefinitions"
-			)
+		[PSTypeDataAutoImportSettings]::Current.Blocklist.Where({LikeAny $_ $AssemblyName}) | ForEach-Object {
+			[PSCustomObject]@{
+				IsApplied		=	[PSTypeDataAutoImportSettings]::Current.AutoImportPreference -eq [PSTypeDataAutoImportPreference]::Blocklist
+				CanImport 		=	$false
+				Reason			=	'Block'
+				AssemblyName	=	$_
+				PSTypeName = 'Stroniax.PowerShell.Pseudo.PSTypeDataImportPreferenceItem'
+			}
 		}
-		foreach ($assembly in [PSTypeDataDefinitionSettings]::Current.AssembliesOmitted) {
-			[PSTypeDataConfigurationItem]::new(
-				$null,
-				$assembly,
-				$true,
-				"BlockAfterFirstScan"
-			)
+		[PSTypeDataAutoImportPreference]::Current.Allowlist.Where({LikeAny $_ $AssemblyName}) | ForEach-Object {
+			[PSCustomObject]@{
+				IsApplied		=	[PSTypeDataAutoImportSettings]::Current.AutoImportPreference -eq [PSTypeDataAutoImportPreference]::Allowlist
+				CanImport 		=	$true
+				Reason			=	'Allow'
+				AssemblyName	=	$_
+				PSTypeName = 'Stroniax.PowerShell.Pseudo.PSTypeDataImportPreferenceItem'
+			}
 		}
-		foreach ($assembly in [PSTypeDataConfigurationItem]::Current.AssembliesAllowed) {
-			[PSTypeDataConfigurationItem]::new(
-				$null,
-				$assembly,
-				$false,
-				"Unblock-TypeDataDefinitions"
-			)
+		[PSTypeDataAutoImportPreference]::Current.SkipList.Where({LikeAny $_ $AssemblyName}) | ForEach-Object {
+			[PSCustomObject]@{
+				IsApplied		=	![PSTypeDataAutoImportSettings]::Current.AlwaysCheckAssemblies
+				CanImport 		=	$false
+				Reason			=	'Skip'
+				AssemblyName	=	$_
+				PSTypeName = 'Stroniax.PowerShell.Pseudo.PSTypeDataImportPreferenceItem'
+			}
 		}
 	}
 }
 
 
-function Clear-TypeDataDefinitionsExclusion {
-	[CmdletBinding(SupportsShouldProcess)]
+function Clear-TypeDataImportPreference {
+	[CmdletBinding()]
 	param(
 		[Parameter()]
 		[System.Management.Automation.SwitchParameter]
 		$Persist
 	)
 	process {
-		if ($Persist -and $PSCmdlet.ShouldProcess("all exclusion and permittance settings")) {
-			[PSTypeDataDefinitionSettings]::ReloadPersistentScope()
-			[PSTypeDataDefinitionSettings]::Persistent.AssembliesBlocked = @()
-			[PSTypeDataDefinitionSettings]::Persistent.AssembliesAllowed = @()
-			[PSTypeDataDefinitionSettings]::Persistent.AssembliesOmitted = @()
-			[PSTypeDataDefinitionSettings]::Persistent.Save()
+		if ($Persist) {
+			[PSTypeDataAutoImportSettings]::ReloadPersistentScope()
+			[PSTypeDataAutoImportSettings]::Persistent.Blocklist = @()
+			[PSTypeDataAutoImportSettings]::Persistent.Allowlist = @()
+			[PSTypeDataAutoImportSettings]::Persistent.Skiplist = @()
+			[PSTypeDataAutoImportSettings]::Persistent.Save()
 		}
-		[PSTypeDataDefinitionSettings]::Current.AssembliesBlocked = @()
-		[PSTypeDataDefinitionSettings]::Current.AssembliesAllowed = @()
-		[PSTypeDataDefinitionSettings]::Current.AssembliesOmitted = @()
+		[PSTypeDataAutoImportSettings]::Current.Blocklist = @()
+		[PSTypeDataAutoImportSettings]::Current.Allowlist = @()
+		[PSTypeDataAutoImportSettings]::Current.Skiplist = @()
 	}
 }
 
 
-function Block-TypeDataDefinitions {
+<#
+.SYNOPSIS
+	Sets whether the typedata of a given assembly is blocked from being automatically imported.
+.EXAMPLE
+	PS C:\> Set-TypeDataImportPreference -AssemblyName ([System.String].Assembly.FullName) -Setting Blocked -Persist
+	
+	Assuming that the Set-TypeDataImportSettings function was used to set AutoImportPreference to Blocklist,
+	the type data of the assembly that defines the [System.String] type will no longer be automatically 
+	imported.
+.INPUTS
+	[System.String]
+.OUTPUTS
+	None
+.NOTES
+#>
+function Set-TypeDataImportPreference {
 	[CmdletBinding(SupportsShouldProcess, DefaultParameterSetName = "AssemblyNameSet")]
 	param(
-		[Parameter(ParameterSetName = "AssemblyNameSet", Mandatory)]
-		[System.String[]]
-		[ArgumentCompleter( {
-				[PSTypeDataDefinitionSettings]::Current.AssembliesBlocked + [PSTypeDataDefinitionSettings]::Current.AssembliesOmitted | Where-Object { $_ -like "$($args[2])*" }
+		[Parameter(ParameterSetName = "AssemblyNameSet", Mandatory, ValueFromPipelineByPropertyName)]
+		[Alias('FullName')]
+		[ScriptTransformationAttribute({
+			if ($_ -is [System.Reflection.Assembly]) {
+				return $_.FullName
+			}
+			else {
+				return $_
+			}
+		})]
+		[ArgumentCompleter({
+				[System.AppDomain]::AppDomain.GetAssemblies() `
+				| Select-Object -ExpandProperty FullName `
+				| Where-Object { $_ -like "$( $args[2] )*" } `
+				| ForEach-Object { if ($_ -like '* *') { "'$_'" } else { $_ } }
 			})]
+		[System.String[]]
 		$AssemblyName,
+
+		[Parameter(Mandatory)]
+		[Alias("Value")]
+		[ValidateSet("Blocked","Allowed","None")]
+		[System.String]
+		$Setting,
 
 		[Parameter()]
 		[System.Management.Automation.SwitchParameter]
-		$CurrentSessionOnly
+		$Persist
 	)
 	process {
-		if ($PSCmdlet.ShouldProcess("Block type definitions", [System.String]::Join(", ", $AssemblyName))) {
-			[PSTypeDataDefinitionSettings]::Current.AssembliesBlocked += $AssemblyName
-			if (!$CurrentSessionOnly) {
-				[PSTypeDataDefinitionSettings]::ReloadPersistentScope()
-				[PSTypeDataDefinitionSettings]::Persistent.AssembliesBlocked += $AssemblyName
-				[PSTypeDataDefinitionSettings]::Persistent.Save()
-			}
-		}
-	}
-}
-
-
-function Unblock-TypeDataDefinitions {
-	[CmdletBinding(SupportsShouldProcess, DefaultParameterSetName = "AssemblyNameSet")]
-	param(
-		[Parameter(ParameterSetName = "AssemblyNameSet", Mandatory)]
-		[System.String[]]
-		[ArgumentCompleter( {
-				[PSTypeDataDefinitionSettings]::Current.AssembliesBlocked + [PSTypeDataDefinitionSettings]::Current.AssembliesOmitted | Where-Object { $_ -like "$($args[2])*" }
-			})]
-		$AssemblyName,
-
-		[Parameter(ParameterSetName = "TypeNameSet", Mandatory)]
-		[System.String[]]
-		[ArgumentCompleter( {
-				[PSTypeDataDefinitionSettings]::Current.TypesBlocked | Where-Object { $_ -like "$($args[2])*" }
-			})]
-		$TypeName,
-
-		[Parameter()]
-		[System.Management.Automation.SwitchParameter]
-		$CurrentSessionOnly
-	)
-	process {
-		$target = $AssemblyName
-		if ($null -eq $target -or $target.Count -eq 0) { $target = $TypeName }
-		if ($PSCmdlet.ShouldProcess("Unblock type definitions", [System.String]::Join(", ", $target))) {
-			if ($TypeName) {
-				[PSTypeDataDefinitionSettings]::Current.TypesBlocked = [PSTypeDataDefinitionSettings]::Current.TypesBlocked -ne $TypeName
-			}
-			if ($AssemblyName) {
-				[PSTypeDataDefinitionSettings]::Current.AssembliesBlocked = [PSTypeDataDefinitionSettings]::Current.AssembliesBlocked -ne $AssemblyName
-			}
-			if (!$CurrentSessionOnly) {
-				[PSTypeDataDefinitionSettings]::ReloadPersistentScope()
-				if ($TypeName) {
-					[PSTypeDataDefinitionSettings]::Persistent.TypesBlocked = [PSTypeDataDefinitionSettings]::Persistent.TypesBlocked -ne $TypeName
+		if ($PSCmdlet.ShouldProcess($AssemblyName, "set import preference to $Setting")) {
+			switch ($Settings) {
+				('Blocked') {
+					[PSTypeDataAutoImportSettings]::Current.Allowlist = [PSTypeDataAutoImportSettings]::Current.Allowlist -ne $AssemblyName
+					[PSTypeDataAutoImportSettings]::Current.Skiplist = [PSTypeDataAutoImportSettings]::Current.Skiplist -ne $AssemblyName
+					[PSTypeDataAutoImportSettings]::Current.Blocklist = ([PSTypeDataAutoImportSettings]::Current.Blocklist -ne $AssemblyName) + $AssemblyName
 				}
-				if ($AssemblyName) {
-					[PSTypeDataDefinitionSettings]::Persistent.AssembliesBlocked = [PSTypeDataDefinitionSettings]::Persistent.AssembliesBlocked -ne $AssemblyName
+				('Allowed') {
+					[PSTypeDataAutoImportSettings]::Current.Allowlist = ([PSTypeDataAutoImportSettings]::Current.Allowlist -ne $AssemblyName) + $AssemblyName
+					[PSTypeDataAutoImportSettings]::Current.Skiplist = [PSTypeDataAutoImportSettings]::Current.Skiplist -ne $AssemblyName
+					[PSTypeDataAutoImportSettings]::Current.Blocklist = [PSTypeDataAutoImportSettings]::Current.Blocklist -ne $AssemblyName
 				}
-				[PSTypeDataDefinitionSettings]::Persistent.Save()
+				('None') {
+					[PSTypeDataAutoImportSettings]::Current.Allowlist = [PSTypeDataAutoImportSettings]::Current.Allowlist -ne $AssemblyName
+					[PSTypeDataAutoImportSettings]::Current.Skiplist = [PSTypeDataAutoImportSettings]::Current.Skiplist -ne $AssemblyName
+					[PSTypeDataAutoImportSettings]::Current.Blocklist = [PSTypeDataAutoImportSettings]::Current.Blocklist -ne $AssemblyName
+				}
+			}
+			if ($Persist) {
+				[PSTypeDataAutoImportSettings]::ReloadPersistentScope()
+				switch ($Settings) {
+					('Blocked') {
+						[PSTypeDataAutoImportSettings]::Persistent.Allowlist = [PSTypeDataAutoImportSettings]::Persistent.Allowlist -ne $AssemblyName
+						[PSTypeDataAutoImportSettings]::Persistent.Skiplist = [PSTypeDataAutoImportSettings]::Persistent.Skiplist -ne $AssemblyName
+						[PSTypeDataAutoImportSettings]::Persistent.Blocklist = ([PSTypeDataAutoImportSettings]::Persistent.Blocklist -ne $AssemblyName) + $AssemblyName
+					}
+					('Allowed') {
+						[PSTypeDataAutoImportSettings]::Persistent.Allowlist = ([PSTypeDataAutoImportSettings]::Persistent.Allowlist -ne $AssemblyName) + $AssemblyName
+						[PSTypeDataAutoImportSettings]::Persistent.Skiplist = [PSTypeDataAutoImportSettings]::Persistent.Skiplist -ne $AssemblyName
+						[PSTypeDataAutoImportSettings]::Persistent.Blocklist = [PSTypeDataAutoImportSettings]::Persistent.Blocklist -ne $AssemblyName
+					}
+					('None') {
+						[PSTypeDataAutoImportSettings]::Persistent.Allowlist = [PSTypeDataAutoImportSettings]::Persistent.Allowlist -ne $AssemblyName
+						[PSTypeDataAutoImportSettings]::Persistent.Skiplist = [PSTypeDataAutoImportSettings]::Persistent.Skiplist -ne $AssemblyName
+						[PSTypeDataAutoImportSettings]::Persistent.Blocklist = [PSTypeDataAutoImportSettings]::Persistent.Blocklist -ne $AssemblyName
+					}
+				}	
+				[PSTypeDataAutoImportSettings]::Persistent.Save()
 			}
 		}
 	}
@@ -539,20 +668,21 @@ function Unblock-TypeDataDefinitions {
 .SYNOPSIS
 	Retrieves TypeData definition attributes and the items to which they are applied.
 .DESCRIPTION
-	Long description
 .EXAMPLE
-	PS C:\> <example usage>
-	Explanation of what the example does
+	PS C:\> [Stroniax.PowerShell.PSScriptProperty('FullName', '$this.FirstName + '' '' + $this.LastName')] 
+	class MyPSType { [System.String]$FirstName; [System.String]$LastName }
+	PS C:\> Get-TypeDataDefinitions -Type [MyPSType]
+	
+	This example demonstrates using this method with a type defined in PowerShell to retrieve TypeData definitions.
 .INPUTS
-	Inputs (if any)
+	[System.Type]
 .OUTPUTS
-	Output (if any)
+	None
 .NOTES
-	General notes
 #>
 function Get-TypeDataDefinitions {
 	[CmdletBinding(DefaultParameterSetName = 'AssemblySet')]
-	[OutputType('Stroniax.PowerShell.PSTypeDataDefinition')]
+	[OutputType('Stroniax.PowerShell.Pseudo.PSTypeDataDefinition')]
 	param(
 		# The assembly from which to retrieve TypeData definitions. The assembly and all types defined by the
 		# assembly will be scanned for TypeData definitions.
@@ -584,7 +714,7 @@ function Get-TypeDataDefinitions {
 				[PSCustomObject]@{
 					'AttributeDefinition' = $_.Key
 					'AttributeTarget' = $_.Value
-					'PSTypeName' = 'Stroniax.PowerShell.PSTypeDataDefinition'
+					'PSTypeName' = 'Stroniax.PowerShell.Pseudo.PSTypeDataDefinition'
 				}
 			}
 		}
@@ -594,7 +724,7 @@ function Get-TypeDataDefinitions {
 					[PSCustomObject]@{
 						'AttributeDefinition' = $_.Key
 						'AttributeTarget' = $_.Value
-						'PSTypeName' = 'Stroniax.PowerShell.PSTypeDataDefinition'
+						'PSTypeName' = 'Stroniax.PowerShell.Pseudo.PSTypeDataDefinition'
 					}
 				}
 			}
@@ -603,47 +733,35 @@ function Get-TypeDataDefinitions {
 			[System.Reflection.Assembly[]]$Assemblies = [System.AppDomain]::CurrentDomain.GetAssemblies()
 			# Check only against current settings. Persistent settings are designed as a starting point
 			# for any process, but are ignored at runtime.
-			[PSTypeDataDefinitionSettings]$Settings = [PSTypeDataDefinitionSettings]::Current
-			[System.Lazy[PSTypeDataDefinitionSettings]]$PersistentSettings = 
-				[System.Lazy[PSTypeDataDefinitionSettings]]::new(
-					[System.Func[PSTypeDataDefinitionSettings]]{ 
-						[PSTypeDataDefinitionSettings]::ReloadPersistentScope()
-						return [PSTypeDataDefinitionSettings]::Persistent
+			[PSTypeDataAutoImportSettings]$Settings = [PSTypeDataAutoImportSettings]::Current
+			[System.Lazy[PSTypeDataAutoImportSettings]]$PersistentSettings = 
+				[System.Lazy[PSTypeDataAutoImportSettings]]::new(
+					[System.Func[PSTypeDataAutoImportSettings]]{ 
+						[PSTypeDataAutoImportSettings]::ReloadPersistentScope()
+						return [PSTypeDataAutoImportSettings]::Persistent
 					}
 				)
 			foreach ($asm in $Assemblies) {
-				[System.String]$Name = $asm.GetName().FullName
-				if ($Settings.BlockUnlessAllowed -and $Name -notin $Settings.AssembliesAllowed) {
-					Write-Verbose "Skipping assembly '$( $asm.GetName().Name )'. Reason: BlockUnlessAllowed."
-					continue
-				}
-				if ($Settings.BlockAfterFirstScan -and $Name -in $Settings.AssembliesOmitted) {
-					Write-Verbose "Skipping assembly '$( $asm.GetName().Name )'. Reason: BlockAfterFirstScan."
-					continue
-				}
-				# Blocked assemblies are blocked regardless of current settinsg
-				if ($Name -in $Settings.AssembliesBlocked) {
-					Write-Verbose "Skipping assembly '$( $asm.GetName().Name )'. Reason: Blocked."
+				if (!(Test-TypeDataImportPreference -Assembly $asm)) {
 					continue
 				}
 				$Definitions = [Stroniax.PowerShell.PSTypeDataAttribute]::GetTypeDataDefinitions($asm)
-				Write-Debug ("Assembly '$( $asm.GetName().Name )' contains " +
-							"$( $Definitions.Count ) TypeData definitions.")
+				Write-Debug ("Assembly '$( $asm.GetName().Name )' contains $( $Definitions.Count ) TypeData definitions.")
 				if ($Definitions.Count -eq 0) {
 					if ($PersistentSettings.Value.BlockAfterFirstScan -and
-						$PersistentSettings.Value.AssembliesOmitted -notcontains $Name)
+						$PersistentSettings.Value.AssembliesOmitted -notcontains $asm.FullName)
 					{
-						$PersistentSettings.Value.AssembliesOmitted += $Name
+						$PersistentSettings.Value.AssembliesOmitted += $asm.FullName
 					}
 					if ($Settings.BlockAfterFirstScan) {
-						$Settings.AssembliesOmitted += $Name
+						$Settings.AssembliesOmitted += $asm.FullName
 					}
 				}
 				$Definitions.GetEnumerator() | ForEach-Object {
 					[PSCustomObject]@{
 						'AttributeDefinition' = $_.Key
 						'AttributeTarget' = $_.Value
-						'PSTypeName' = 'Stroniax.PowerShell.PSTypeDataDefinition'
+						'PSTypeName' = 'Stroniax.PowerShell.Pseudo.PSTypeDataDefinition'
 					}
 				}
 			}
@@ -661,14 +779,14 @@ function Get-TypeDataDefinitions {
 .DESCRIPTION
 	Imports PowerShell Extended Type System TypeData definitions.
 .EXAMPLE
-	PS C:\> <example usage>
-	Explanation of what the example does
+	PS C:\> Import-TypeDataDefinitions -Assembly ([MyNamespace.MyClass].Assembly)
+	
+	Imports all type data defined in the assembly of the [MyNamespace.MyClass] type.
 .INPUTS
-	Inputs (if any)
+	[System.Reflection.Assembly]
 .OUTPUTS
-	Output (if any)
+	None
 .NOTES
-	General notes
 #>
 function Import-TypeDataDefinitions {
 	[CmdletBinding(DefaultParameterSetName = "ImportAssemblyDefinitions")]
@@ -1071,13 +1189,13 @@ add-type -TypeDefinition @'
 using System;
 using System.Collections.Generic;
 using System.Management.Automation;
-namespace Stroniax.PowerShell.Internal {
+namespace Stroniax.PowerShell.Runtime {
 	public static class SubscribeJoblessAssemblyLoadEvent {
 		public static void Subscribe(ScriptBlock script) {
 			AppDomain.CurrentDomain.AssemblyLoad += (a,b) => {
 				List<PSVariable> variables = new List<PSVariable>();
 				variables.Add(new PSVariable("Sender", a));
-				variables.Add(new PSVariable("Assembly", b));
+				variables.Add(new PSVariable("AssemblyLoadEventArgs", b));
 				variables.Add(new PSVariable("_", b));
 				script.InvokeWithContext(null, variables, a, b);
 			};
@@ -1085,7 +1203,10 @@ namespace Stroniax.PowerShell.Internal {
 	}
 }
 '@
-[Stroniax.PowerShell.Internal.SubscribeJoblessAssemblyLoadEvent]::Subscribe({
-	Import-TypeDataDefinitions -Assembly $_
+[Stroniax.PowerShell.Runtime.SubscribeJoblessAssemblyLoadEvent]::Subscribe({
+	if (Test-TypeDataImportPreference -Assembly $_.LoadedAssembly) {
+		Import-TypeDataDefinitions -Assembly $_.LoadedAssembly
+	}
 })
+Import-TypeDataDefinitions
 #endregion
