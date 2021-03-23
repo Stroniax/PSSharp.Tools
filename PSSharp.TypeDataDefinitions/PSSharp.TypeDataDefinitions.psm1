@@ -603,7 +603,18 @@ function Clear-TypeDataImportPreference {
 
 <#
 .SYNOPSIS
-	Sets whether the typedata of a given assembly is blocked from being automatically imported.
+	Determines whether or not TypeData is allowed to be imported from a given assembly.
+.DESCRIPTION
+	TypeData import preferences are used to determine from which assemblies TypeData may be imported. Different
+	settings (configured with Set-TypeDataImportSettings) will determine whether an assembly must be explicitly
+	added to an allow-list for the assembly to be imported, or whether the assembly must be added to a blocklist
+	to prevent importing it, as well as whether or not assemblies should be imported every time or if assemblies
+	previously determined to include no TypeData definitions can be skipped.
+
+	This function will defines the instructions for an individual assembly, to determine whehther is must be
+	blocked or is allowed. Note that the settings will only be used if the AutoImportPreference matches the
+	setting applied. To determine if a setting is applied, use Get-TypeDataImportPreference and observe the
+	IsActive property.
 .EXAMPLE
 	PS C:\> Set-TypeDataImportPreference -AssemblyName ([System.String].Assembly.FullName) -Setting Blocked -Persist
 	
@@ -622,19 +633,15 @@ function Set-TypeDataImportPreference {
 		[Parameter(ParameterSetName = "AssemblyNameSet", Mandatory, ValueFromPipelineByPropertyName)]
 		[Alias('FullName')]
 		[ScriptTransformationAttribute({
-			if ($_ -is [System.Reflection.Assembly]) {
-				return $_.FullName
-			}
-			else {
-				return $_
-			}
+			if ($_ -is [System.Reflection.Assembly]) { return $_.FullName }
+			else { return $_ }
 		})]
 		[ArgumentCompleter({
-				[System.AppDomain]::AppDomain.GetAssemblies() `
-				| Select-Object -ExpandProperty FullName `
-				| Where-Object { $_ -like "$( $args[2] )*" } `
-				| ForEach-Object { if ($_ -like '* *') { "'$_'" } else { $_ } }
-			})]
+			[System.AppDomain]::AppDomain.GetAssemblies() `
+			| Select-Object -ExpandProperty FullName `
+			| Where-Object { $_ -like "$( $args[2] )*" } `
+			| ForEach-Object { if ($_ -like '* *') { "'$_'" } else { $_ } }
+		})]
 		[System.String[]]
 		$AssemblyName,
 
@@ -695,16 +702,23 @@ function Set-TypeDataImportPreference {
 
 <#
 .SYNOPSIS
-	Retrieves TypeData definition attributes and the items to which they are applied.
+	Retrieves TypeData definition attributes and the reflection instance to which they are applied.
 .DESCRIPTION
+	This function is uses reflection to determine what TypeData definitions are applied to a given type or
+	asssembly without importing the TypeData. This can be used to determine what TypeData is being observed
+	in an assembly or PowerShell-defined class type during development.
 .EXAMPLE
 	PS C:\> [PSSharp.PSScriptProperty('FullName', '$this.FirstName + '' '' + $this.LastName')] 
-	class MyPSType { [System.String]$FirstName; [System.String]$LastName }
-	PS C:\> Get-TypeDataDefinitions -Type [MyPSType]
-	
+			class MyPSType { [System.String]$FirstName; [System.String]$LastName }
+	PS C:\> Get-TypeDataDefinitions -Type ([MyPSType])
+	AttributeDefinition               AttributeTarget
+	--------------------------------- ---------------
+	PSSharp.PSScriptPropertyAttribute MyPSType
+
 	This example demonstrates using this method with a type defined in PowerShell to retrieve TypeData definitions.
 .INPUTS
 	[System.Type]
+	[System.Reflection.Assembly]
 .OUTPUTS
 	None
 .NOTES
@@ -715,35 +729,40 @@ function Get-TypeDataDefinitions {
 	param(
 		# The assembly from which to retrieve TypeData definitions. The assembly and all types defined by the
 		# assembly will be scanned for TypeData definitions.
-		[Parameter(ParameterSetName = "AssemblySet")]
-		[System.Reflection.Assembly]$Assembly,
+		[Parameter(ParameterSetName = "AssemblySet", ValueFromPipeline)]
+		[System.Reflection.Assembly[]]$Assembly,
 
 		# The type from which to retrieve TypeData definitions. Types only need to be evaluated individually
 		# for PowerShell defined classes; otherwise, use the -Assembly parameter.
 		# An object passed to this parameter that is not [System.Type] will be transformed into that object's
 		# type.
 		[Parameter(Mandatory, ParameterSetName = "TypeSet", ValueFromPipeline)]
-		[TransformationScriptAttribute({if ($_ -isnot [System.Type]) { return $_.GetType() } else { return $_ }})]
-		[System.Type]$Type
+		[System.Type[]]$Type
 	)
 	begin {
 		if ($PSCmdlet.MyInvocation.ExpectingInput) {
 			[System.Type[]]$Types = @()
+			[System.Reflection.Assembly[]]$Assemblies = @()
 		}
 	}
 	process {
 		if ($PSBoundParameters.ContainsKey('Type')) {
 			$Types += $Type
 		}
+		if ($PSBoundParameters.ContainsKey('Assembly') {
+			$Assemblies += $Assembly
+		}
 		# Assembly is not bound from pipeline and therefore no action needs to be taken if the AssemblySet parameter is being invoked.
 	}
 	end {
 		if ($PSBoundParameters.ContainsKey('Assembly')) {
-			[PSSharp.PSTypeDataAttribute]::GetTypeDataDefinitions($Assembly).GetEnumerator() | ForEach-Object {
-				[PSCustomObject]@{
-					'AttributeDefinition' = $_.Key
-					'AttributeTarget' = $_.Value
-					'PSTypeName' = 'PSSharp.Pseudo.PSTypeDataDefinition'
+			foreach ($asm in $Assemblies) {
+				[PSSharp.PSTypeDataAttribute]::GetTypeDataDefinitions($asm).GetEnumerator() | ForEach-Object {
+					[PSCustomObject]@{
+						'AttributeDefinition' = $_.Key
+						'AttributeTarget' = $_.Value
+						'PSTypeName' = 'PSSharp.Pseudo.PSTypeDataDefinition'
+					}
 				}
 			}
 		}
@@ -804,15 +823,18 @@ function Get-TypeDataDefinitions {
 
 <#
 .SYNOPSIS
-	Imports all TypeData defined by attributes applied to a given assembly or type.
+	Imports TypeData definitions from a given assembly or PowerShell class type.
 .DESCRIPTION
-	Imports PowerShell Extended Type System TypeData definitions.
+	Imports PowerShell Extended Type System TypeData definitions. If no parameters are defined, this will import
+	from all assemblies loaded into the Application Domain where the assembly is allowed to be imported given
+	the current TypeData import settings.
 .EXAMPLE
 	PS C:\> Import-TypeDataDefinitions -Assembly ([MyNamespace.MyClass].Assembly)
 	
 	Imports all type data defined in the assembly of the [MyNamespace.MyClass] type.
 .INPUTS
 	[System.Reflection.Assembly]
+	[System.Type]
 .OUTPUTS
 	None
 .NOTES
@@ -820,16 +842,44 @@ function Get-TypeDataDefinitions {
 function Import-TypeDataDefinitions {
 	[CmdletBinding(DefaultParameterSetName = "ImportAssemblyDefinitions")]
 	param(
-		[Parameter(ValueFromPipeline, ParameterSetName = "ImportAssemblyDefinitions")]
-		[System.Reflection.Assembly]$Assembly,
+		# The assembly from which to import TypeData definitions.
+		[Parameter(Position = 0, ValueFromPipeline, ParameterSetName = "ImportAssemblyDefinitions")]
+		[System.Reflection.Assembly]
+		$Assembly,
 
-		[Parameter(Mandatory, ParameterSetName = "ImportTypeDefinitions")]
-		[TransformationScriptAttribute({if ($_ -isnot [System.Type]) { return $_.GetType() } else { return $_ }})]
-		[System.Type]$Type
+		# The type from which to import TypeData definitions.
+		[Parameter(Position = 0, ValueFromPipeline, ParameterSetName = "ImportTypeDefinitions", Mandatory)]
+		[System.Type]
+		$Type,
+
+		# The attribute that defines TypeData to be imported.
+		[Parameter(DontShow, ValueFromPipelineByPropertyName, ParameterSetName = "FromGetFunction", Mandatory)]
+		[PSSharp.PSTypeDataAttribute]
+		$AttributeDefinition,
+
+		# The assembly, type, method, or property to which the attribute is applied.
+		[Parameter(DontShow, ValueFromPipelineByPropertyName, ParameterSetName = "FromGetFunction", Mandatory)]
+		[System.Reflection.ICustomAttributeProvider]
+		$AttributeTarget
 	)
+	begin {
+		$TypeDataDefinitions = @()
+	}
 	process {
-		$Definitions = Get-TypeDataDefinitions @PSBoundParameters
-		foreach ($TypeDataDefinition in $Definitions) {
+		if ($PSCmdlet.ParameterSetName -eq 'FromGetFunction') {
+			$TypeDataDefinitions += [PSCustomObject]@{
+				AttributeDefinition	= $AttributeDefinition
+				AttributeTarget		= $AttributeTarget
+				PSTypeName = 'PSSharp.Pseudo.PSTypeDataDefinition'
+			}
+		}
+		else {
+			# Bound parameters can be sent because Assembly is not required by Get function.
+			$TypeDataDefinitions += Get-TypeDataDefinitions @PSBoundParameters
+		}
+	}
+	end {
+		foreach ($TypeDataDefinition in $TypeDataDefinitions) {
 			Write-Debug ("Importing TypeData definition " +
 						"$( $TypeDataDefinition.AttributeDefinition.GetType().FullName ) " +
 						"applied to $( $TypeDataDefinition.AttributeTarget ).")
