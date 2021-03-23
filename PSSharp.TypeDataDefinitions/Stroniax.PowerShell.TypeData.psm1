@@ -1232,6 +1232,7 @@ namespace PSSharp.Runtime {
 	}
 }
 '@
+#Test change
 [PSSharp.Runtime.SubscribeJoblessAssemblyLoadEvent]::Subscribe({
 	if (Test-TypeDataImportPreference -Assembly $_.LoadedAssembly) {
 		Import-TypeDataDefinitions -Assembly $_.LoadedAssembly
