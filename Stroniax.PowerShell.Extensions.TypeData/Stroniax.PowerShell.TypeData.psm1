@@ -1065,3 +1065,27 @@ function Import-TypeDataDefinitions {
 }
 
 #endregion
+
+#region Assembly Load Event Listener
+add-type -TypeDefinition @'
+using System;
+using System.Collections.Generic;
+using System.Management.Automation;
+namespace Stroniax.PowerShell.Internal {
+	public static class SubscribeJoblessAssemblyLoadEvent {
+		public static void Subscribe(ScriptBlock script) {
+			AppDomain.CurrentDomain.AssemblyLoad += (a,b) => {
+				List<PSVariable> variables = new List<PSVariable>();
+				variables.Add(new PSVariable("Sender", a));
+				variables.Add(new PSVariable("Assembly", b));
+				variables.Add(new PSVariable("_", b));
+				script.InvokeWithContext(null, variables, a, b);
+			};
+		}
+	}
+}
+'@
+[Stroniax.PowerShell.Internal.SubscribeJoblessAssemblyLoadEvent]::Subscribe({
+	Import-TypeDataDefinitions -Assembly $_
+})
+#endregion
