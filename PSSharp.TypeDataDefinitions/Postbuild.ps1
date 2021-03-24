@@ -156,10 +156,18 @@ $ModuleManifestParameters = @{
 	FormatsToProcess = $ModuleDirectoryContents | Where-Object { $_.Name -like '*.format.ps1xml' } | ForEach-Object { $_.FullName.Replace($Config['ModuleDirectory'], '').Trim('/\') }
 	TypesToProcess = $ModuleDirectoryContents | Where-Object { $_.Name -like '*.types.ps1xml' } | ForEach-Object { $_.FullName.Replace($Config['ModuleDirectory'], '').Trim('/\') }
 }
-$Commands = @((Join-Path $Config['ModuleDirectory'] -ChildPath $Config['RootModule']) + '.dll') + ($ModuleDirectoryContents | Where-Object { $_.Extension -eq '.psm1' -or $_.Extension -eq '.cdxml' }).FullName | Import-Module -PassThru -ErrorAction Ignore | Select-Object -ExpandProperty ExportedCommands | Select-Object -ExpandProperty Values
-$ModuleManifestParameters['CmdletsToExport'] = @($Commands | Where-Object { $_.CommandType -eq 'Cmdlet' } | Select-Object -ExpandProperty Name) -ne $Config['PrivateCommands']
-$ModuleManifestParameters['FunctionsToExport'] = @($Commands | Where-Object { $_.CommandType -eq 'Function' } | Select-Object -ExpandProperty Name) -ne $Config['PrivateCommands']
-$ModuleManifestParameters['AliasesToExport'] = @($Commands | Where-Object { $_.CommandType -eq 'Alias' } | Select-Object -ExpandProperty Name) -ne $Config['PrivateCommands']
+
+# Import in dependency order
+$CommandModules = @()
+$CommandModules += $ModuleDirectoryContents | Where-Object { $_.Extension -eq '.dll' } | Select-Object -ExpandProperty FullName | Import-Module -PassThru
+$CommandModules += $ModuleDirectoryContents | Where-Object { $_.Extension -in @('.psm1', '.cdxml') } | Select-Object -ExpandProperty FullName | Import-Module -PassThru
+$Commands = $CommandModules `
+			| Select-Object -ExpandProperty ExportedCommands `
+			| Select-Object -ExpandProperty Values `
+			| Where-Object { $_.Name -notin $Config['PrivateCommands'] }
+$ModuleManifestParameters['CmdletsToExport'] = @($Commands | Where-Object { $_.CommandType -eq 'Cmdlet' })
+$ModuleManifestParameters['FunctionsToExport'] = @($Commands | Where-Object { $_.CommandType -eq 'Function' })
+$ModuleManifestParameters['AliasesToExport'] = @($Commands | Where-Object { $_.CommandType -eq 'Alias' })
 
 $ModuleManifestParameters.Keys | Where-Object { $null -eq $ModuleManifestParameters[$_] } | ForEach-Object { $ModuleManifestParameters.Remove[$_] } | Out-Null
 

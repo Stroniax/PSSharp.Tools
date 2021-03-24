@@ -617,6 +617,6 @@ namespace PSSharp
         [PSCodePropertyFromExtensionMethod]
         public static bool IsNullOrEmpty(this string fromString) => string.IsNullOrEmpty(fromString);
         [PSCodeMethodFromExtensionMethod]
-        public static string ToString(this object[] array, string separator) => string.Join(separator, array);
+        public static string ToString(this List<string> array, string separator) => string.Join(separator, array);
     }
 }

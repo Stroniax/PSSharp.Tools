@@ -44,7 +44,9 @@ Update-TypeData -TypeName 'PSSharp.PSCodePropertyAttribute' -MemberType 'ScriptM
 Update-TypeData -TypeName 'PSSharp.PSCodePropertyFromExtensionMethodAttribute' -MemberType 'ScriptMethod' -MemberName 'SetParameters' -Value {
 	param([Hashtable]$parameters, [System.Reflection.ICustomAttributeProvider]$attributeAppliedTo)
 	$this.PSBase.SetParameters($parameters, $attributeAppliedTo)
-
+	if ($attributeAppliedTo.IsGenericMethod -or $attributeAppliedTo.ContainsGenericParameters) {
+		throw [System.InvalidOperationException]::new("CodeMethods and CodeProperties cannot be created from extension methods that are generic or contain generic parameters.")
+	}
 	# Create type and set method reference
 	[System.String]$MethodName = $Params['MemberName']
 	[System.String]$ReturnType = $attributeAppliedTo.ReturnType.FullName
@@ -58,7 +60,7 @@ Update-TypeData -TypeName 'PSSharp.PSCodePropertyFromExtensionMethodAttribute' -
 	foreach ($param in $attributeAppliedTo.GetParameters()) {
 		if ($FirstParameter) {
 			$InParameterDefinitions += "System.Management.Automation.PSObject $($param.Name)"
-			$InvokeParameterDefinitions += "$($param.ParameterType.FullName)$($param.Name).BaseObject"
+			$InvokeParameterDefinitions += "($($param.ParameterType.FullName))$($param.Name).BaseObject"
 			$FirstParameter = $false
 			$Params['TypeName'] = $param.ParameterType.FullName
 		}
@@ -69,14 +71,16 @@ Update-TypeData -TypeName 'PSSharp.PSCodePropertyFromExtensionMethodAttribute' -
 	}
 	[System.Int16]$i = 0
 	do {
-		[System.String]$DynamicTypeName = $Params['TypeName'].Replace(".", "_") + "_$($i++)"
-		$script:PSExtensionCodeMethodTypes += $DynamicTypeName
+		$i++
+		[System.String]$DynamicTypeName = $Params['TypeName'].Replace(".", "_").Replace("[]","").Replace("<","").Replace(">","").Replace('`','') + "_$i"
 	}
 	while ($script:PSExtensionCodeMethodTypes -contains $DynamicTypeName)
+	$script:PSExtensionCodeMethodTypes += $DynamicTypeName
+
 	$InParameters = $InParameterDefinitions -join ', '
 	$InvokeParameters = $InvokeParameterDefinitions -join ', '
 	$TypeDefinition = "`n" +
-	"namespace PSDynamicCodeExtensionMethods`n" +
+	"namespace PSSharp.PSDynamicCodeExtensionMethods`n" +
 	"{`n" +
 	"    public static class $DynamicTypeName`n" +
 	"    {`n" +
@@ -86,8 +90,8 @@ Update-TypeData -TypeName 'PSSharp.PSCodePropertyFromExtensionMethodAttribute' -
 	"        }`n" +
 	"    }`n" +
 	"}`n"
-	Add-Type -TypeDefinition $TypeDefinition -ReferencedAssemblies $attributeAppliedTo.DeclaringType.Assembly.Location
-	$GetMethod = Get-MethodReference -TypeName "PSDynamicCodeExtensionMethods.$DynamicTypeName" -MethodName "$MethodName" -MethodUse GetProperty -ErrorAction Ignore
+	Add-Type -TypeDefinition $TypeDefinition -ReferencedAssemblies $attributeAppliedTo.DeclaringType.Assembly.Location, ([System.Reflection.Assembly]::LoadWithPartialName('netstandard')) -ErrorAction Stop
+	$GetMethod = Get-MethodReference -TypeName "PSSharp.PSDynamicCodeExtensionMethods.$DynamicTypeName" -MethodName "$MethodName" -MethodUse GetProperty -ErrorAction Ignore
 	if ($null -ne $GetMethod) {
 		$Params['Value'] = $GetMethod
 	}
@@ -95,7 +99,9 @@ Update-TypeData -TypeName 'PSSharp.PSCodePropertyFromExtensionMethodAttribute' -
 Update-TypeData -TypeName 'PSSharp.PSCodeMethodFromExtensionMethodAttribute' -MemberType 'ScriptMethod' -MemberName 'SetParameters' -Value {
 	param([Hashtable]$parameters, [System.Reflection.ICustomAttributeProvider]$attributeAppliedTo)
 	$this.PSBase.SetParameters($parameters, $attributeAppliedTo)
-
+	if ($attributeAppliedTo.IsGenericMethod -or $attributeAppliedTo.ContainsGenericParameters) {
+		throw [System.InvalidOperationException]::new("CodeMethods and CodeProperties cannot be created from extension methods that are generic or contain generic parameters.")
+	}
 	# Create type and set method reference
 	[System.String]$MethodName = $Params['MemberName']
 	[System.String]$ReturnType = $attributeAppliedTo.ReturnType.FullName
@@ -109,7 +115,7 @@ Update-TypeData -TypeName 'PSSharp.PSCodeMethodFromExtensionMethodAttribute' -Me
 	foreach ($param in $attributeAppliedTo.GetParameters()) {
 		if ($FirstParameter) {
 			$InParameterDefinitions += "System.Management.Automation.PSObject $($param.Name)"
-			$InvokeParameterDefinitions += "$($param.ParameterType.FullName)$($param.Name).BaseObject"
+			$InvokeParameterDefinitions += "($($param.ParameterType.FullName))$($param.Name).BaseObject"
 			$FirstParameter = $false
 			$Params['TypeName'] = $param.ParameterType.FullName
 		}
@@ -120,15 +126,15 @@ Update-TypeData -TypeName 'PSSharp.PSCodeMethodFromExtensionMethodAttribute' -Me
 	}
 	[System.Int16]$i = 0
 	do {
-		[System.Int16]$i++
-		[System.String]$DynamicTypeName = $Params['TypeName'].Replace(".", "_") + "_$i"
-		$script:PSExtensionCodeMethodTypes += $DynamicTypeName
+		$i++
+		[System.String]$DynamicTypeName = $Params['TypeName'].Replace(".", "_").Replace("[]","").Replace("<","").Replace(">","").Replace('`','') + "_$i"
 	}
 	while ($script:PSExtensionCodeMethodTypes -contains $DynamicTypeName)
+	$script:PSExtensionCodeMethodTypes += $DynamicTypeName
 	$InParameters = $InParameterDefinitions -join ', '
 	$InvokeParameters = $InvokeParameterDefinitions -join ', '
 	$TypeDefinition = "`n" +
-	"namespace PSDynamicCodeExtensionMethods`n" +
+	"namespace PSSharp.PSDynamicCodeExtensionMethods`n" +
 	"{`n" +
 	"    public static class $DynamicTypeName`n" +
 	"    {`n" +
@@ -138,13 +144,34 @@ Update-TypeData -TypeName 'PSSharp.PSCodeMethodFromExtensionMethodAttribute' -Me
 	"        }`n" +
 	"    }`n" +
 	"}`n"
-	Add-Type -TypeDefinition $TypeDefinition -ReferencedAssemblies $attributeAppliedTo.Assembly.Location
-	
-	$Method = Get-MethodReference -TypeName "PSDynamicCodeExtensionMethods.$DynamicTypeName" -MethodName "$MethodName" -MethodUse Method -ErrorAction Ignore
+	Write-Host $TypeDefinition
+	Write-Host $attributeAppliedTo.DeclaringType.Assembly.Location
+	Write-Host ([System.Reflection.Assembly]::LoadWithPartialName('netstandard'))
+	Add-Type -TypeDefinition $TypeDefinition -ReferencedAssemblies $attributeAppliedTo.DeclaringType.Assembly.Location, ([System.Reflection.Assembly]::LoadWithPartialName('netstandard')) -ErrorAction Stop
+	$Method = Get-MethodReference -TypeName "PSSharp.PSDynamicCodeExtensionMethods.$DynamicTypeName" -MethodName "$MethodName" -MethodUse Method -ErrorAction Ignore
 	if ($null -ne $Method) {
 		$Params['Value'] = $Method
 	}
 } -Force
+function Get-CompileReadyTypeName {
+	[CmdletBinding()]
+	[OutputType([System.String])]
+	param (
+		[Parameter(Mandatory, Position = 0, ValueFromPipeline)]
+		[System.Type]$Type
+	) 
+	process {
+		if ($Type.IsGenericType) {
+			$TypeName = $Type.FullName
+			while ($TypeName.Contains('`')) {
+				
+			}
+		}
+		else {
+			return $Type.FullName
+		}
+	}
+}
 
 # Pseudo-types defined via type data definitions assist argument completion.
 # Properties must be set before the type name is added to a PSCustomObject.
@@ -749,7 +776,7 @@ function Get-TypeDataDefinitions {
 		if ($PSBoundParameters.ContainsKey('Type')) {
 			$Types += $Type
 		}
-		if ($PSBoundParameters.ContainsKey('Assembly') {
+		if ($PSBoundParameters.ContainsKey('Assembly')) {
 			$Assemblies += $Assembly
 		}
 		# Assembly is not bound from pipeline and therefore no action needs to be taken if the AssemblySet parameter is being invoked.
@@ -860,10 +887,16 @@ function Import-TypeDataDefinitions {
 		# The assembly, type, method, or property to which the attribute is applied.
 		[Parameter(DontShow, ValueFromPipelineByPropertyName, ParameterSetName = "FromGetFunction", Mandatory)]
 		[System.Reflection.ICustomAttributeProvider]
-		$AttributeTarget
+		$AttributeTarget,
+
+		# Overwrites existing TypeData for a type if a member with the same name has been previously defined.
+		[Parameter()]
+		[System.Management.Automation.SwitchParameter]
+		$Force
 	)
 	begin {
 		$TypeDataDefinitions = @()
+		$PSBoundParameters.Remove('Force') | Out-Null
 	}
 	process {
 		if ($PSCmdlet.ParameterSetName -eq 'FromGetFunction') {
@@ -894,6 +927,7 @@ function Import-TypeDataDefinitions {
 							TypeName 		= $Type
 							ErrorAction 	= [System.Management.Automation.ActionPreference]::SilentlyContinue
 							ErrorVariable 	= 'ers'
+							Force			= $Force
 						}
 						Update-TypeData @Params
 						foreach ($er in $ers) {
@@ -912,6 +946,7 @@ function Import-TypeDataDefinitions {
 							TypeName 		= $Type
 							ErrorAction 	= [System.Management.Automation.ActionPreference]::SilentlyContinue
 							ErrorVariable 	= 'ers'
+							Force			= $Force
 						}
 						Update-TypeData @Params
 						foreach ($er in $ers) {
@@ -1167,8 +1202,8 @@ function Import-TypeDataDefinitions {
 				}
 				if ($RequireCodeReference -and $null -ne $Params['Value'] -and (
 						!$Params['Value'].IsStatic -or 
-						$Params['Value'].GetProperties().Count -lt 1 -or
-						$Params['Value'].GetProperties()[0].ParameterType -ne [System.Management.Automation.PSObject]
+						$Params['Value'].GetParameters().Count -lt 1 -or
+						$Params['Value'].GetParameters()[0].ParameterType -ne [System.Management.Automation.PSObject]
 					)) {
 					$ex = [PSSharp.TypeDataDefinitionException]::new(
 						'No code reference could be identified. The referenced method must be static and ' +
@@ -1193,8 +1228,8 @@ function Import-TypeDataDefinitions {
 				}
 				if ($RequireGetCodeReference -and $null -ne $Params['Value'] -and (
 						!$Params['Value'].IsStatic -or 
-						$Params['Value'].GetProperties().Count -ne 1 -or
-						$Params['Value'].GetProperties()[0].ParameterType -ne [System.Management.Automation.PSObject]
+						$Params['Value'].GetParameters().Count -ne 1 -or
+						$Params['Value'].GetParameters()[0].ParameterType -ne [System.Management.Automation.PSObject]
 					)) {
 					$ex = [PSSharp.TypeDataDefinitionException]::new(
 						'No code reference could be identified. The referenced method must be static and ' +
@@ -1219,10 +1254,10 @@ function Import-TypeDataDefinitions {
 				}
 				if ($RequireSetCodeReference -and $null -ne $Params['SecondValue'] -and (
 						!$Params['SecondValue'].IsStatic -or 
-						$Params['SecondValue'].GetProperties().Count -ne 2 -or
-						$Params['SecondValue'].GetProperties()[0].ParameterType -ne 
+						$Params['SecondValue'].GetParameters().Count -ne 2 -or
+						$Params['SecondValue'].GetParameters()[0].ParameterType -ne 
 						[System.Management.Automation.PSObject] -or
-						$Params['SecondValue'].GetProperties()[1].ParameterType -ne
+						$Params['SecondValue'].GetParameters()[1].ParameterType -ne
 						$Params['Value'].ReturnType
 					)) {
 					$ex = [PSSharp.TypeDataDefinitionException]::new(
@@ -1251,6 +1286,7 @@ function Import-TypeDataDefinitions {
 			if ($IsErrorState) { continue }
 			#endregion
 
+			if ($Force) { $Params['Force'] = $Force }
 			Write-Debug "Invoking Update-TypeData with the following parameters: $( [System.String]::Join(", ", [System.String[]]$Params.Keys) )"
 			Update-TypeData @Params -ErrorAction SilentlyContinue -ErrorVariable ers
 			foreach ($er in $ers) {
@@ -1264,7 +1300,7 @@ function Import-TypeDataDefinitions {
 #endregion
 
 #region Assembly Load Event Listener
-add-type -TypeDefinition @'
+Add-Type -TypeDefinition @'
 using System;
 using System.Collections.Generic;
 using System.Management.Automation;
@@ -1282,11 +1318,11 @@ namespace PSSharp.Runtime {
 	}
 }
 '@
-#Test change
-[PSSharp.Runtime.SubscribeJoblessAssemblyLoadEvent]::Subscribe({
-	if (Test-TypeDataImportPreference -Assembly $_.LoadedAssembly) {
-		Import-TypeDataDefinitions -Assembly $_.LoadedAssembly
-	}
-})
-Import-TypeDataDefinitions
+
+# [PSSharp.Runtime.SubscribeJoblessAssemblyLoadEvent]::Subscribe({
+# 	if (Test-TypeDataImportPreference -Assembly $_.LoadedAssembly) {
+# 		Import-TypeDataDefinitions -Assembly $_.LoadedAssembly
+# 	}
+# })
+# Import-TypeDataDefinitions
 #endregion
