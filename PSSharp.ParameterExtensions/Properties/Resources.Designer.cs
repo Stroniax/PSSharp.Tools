@@ -61,11 +61,78 @@ namespace PSSharp.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to [CmdletBinding()]
+        ///param(
+        ///	[Parameter()]
+        ///	[System.String]
+        ///	$commandName,
+        ///	
+        ///	[Parameter()]
+        ///	[System.String]
+        ///	$parameterName,
+        ///	
+        ///	[Parameter()]
+        ///	[System.String]
+        ///	$wordToComplete,
+        ///	
+        ///	[Parameter()]
+        ///	[System.Management.Automation.Language.CommandAst]
+        ///	$commandAst,
+        ///	
+        ///	[Parameter()]
+        ///	[System.Collections.IDictionary]
+        ///	$fakeBoundParameters
+        ///)
+        ///process {
+        ///	trap{break}
+        ///	$FilePath = &quot;{0}&quot;
+        ///
+        ///	if (!(Test-Path $FilePath -PathType Leaf)) {
+        ///		return
+        ///	}
+        ///
+        ///	try {
+        ///		[System.IO.FileStream]$FileStream = N [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string FileContentArgumentCompleter {
+        internal static string FileContentCompletion {
             get {
-                return ResourceManager.GetString("FileContentArgumentCompleter", resourceCulture);
+                return ResourceManager.GetString("FileContentCompletion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;#
+        ///.SYNOPSIS
+        ///Short description
+        ///
+        ///.DESCRIPTION
+        ///Long description
+        ///
+        ///.EXAMPLE
+        ///An example
+        ///
+        ///.NOTES
+        ///General notes
+        ///#&gt;
+        ///function SetCompletionAttribute {
+        ///	[CmdletBinding()]
+        ///	param(
+        ///
+        ///	)
+        ///	begin {
+        ///
+        ///	}
+        ///	process {
+        ///
+        ///	}
+        ///	end {
+        ///
+        ///	}
+        ///}.
+        /// </summary>
+        internal static string SetCompletion {
+            get {
+                return ResourceManager.GetString("SetCompletion", resourceCulture);
             }
         }
     }
