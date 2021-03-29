@@ -1,4 +1,4 @@
-﻿namespace Stroniax.AsyncExtensions
+﻿namespace PSSharp.AsyncExtensions
 {
     /// <summary>
     /// Exposes an awaiter, which can be used to asynchronously wait for an operation to complete.

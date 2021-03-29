@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-namespace Stroniax.AsyncExtensions
+namespace PSSharp.AsyncExtensions
 {
     /// <summary>
     /// Contract for an awaiter that waits for an operation to complete.

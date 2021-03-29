@@ -2,13 +2,13 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<RootNamespace>Stroniax.AsyncExtensions</RootNamespace>
+		<RootNamespace>PSSharp.AsyncExtensions</RootNamespace>
 		<LangVersion>8.0</LangVersion>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<DocumentationFile>Stroniax.AsyncExtensions.xml</DocumentationFile>
+		<DocumentationFile>PSSharp.AsyncExtensions.xml</DocumentationFile>
 	</PropertyGroup>
 
 </Project>
