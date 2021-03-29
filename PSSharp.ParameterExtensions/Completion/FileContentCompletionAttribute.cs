@@ -9,9 +9,9 @@ using System.Management.Automation.Language;
 namespace PSSharp
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
-    public class FileContentArgumentCompleterAttribute : ArgumentCompleterAttribute
+    public class FileContentCompletionAttribute : ArgumentCompleterAttribute
     {
-        public FileContentArgumentCompleterAttribute(string filePath)
+        public FileContentCompletionAttribute(string filePath)
             : base(GetScript(filePath))
         {
         }
