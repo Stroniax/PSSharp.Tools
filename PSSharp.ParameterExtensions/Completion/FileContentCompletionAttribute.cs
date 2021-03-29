@@ -17,7 +17,7 @@ namespace PSSharp
         }
         private static ScriptBlock GetScript(string filePath)
         {
-            var scriptText = string.Format(Resources.FileContentArgumentCompleter, filePath?.Replace("\"", "\"\""));
+            var scriptText = string.Format(Resources.FileContentCompletion, filePath?.Replace("\"", "\"\""));
             return ScriptBlock.Create(scriptText);
         }
     }

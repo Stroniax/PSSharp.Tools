@@ -33,7 +33,7 @@ process {
 		[System.IO.StreamReader]$FileReader = [System.IO.StreamReader]::new($FileStream)
 		while (!$FileReader.EndOfStream) {
 			$line = $FileReader.ReadLine()
-			if ("$wordToComplete*" -like $line) {
+			if ($line -like "$wordToComplete*") {
 				New-CompletionResult -CompletionText $line
 			}
 		}
