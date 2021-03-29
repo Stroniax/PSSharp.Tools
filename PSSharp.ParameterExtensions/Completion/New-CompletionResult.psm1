@@ -28,7 +28,11 @@ function New-CompletionResult {
 
 		[Parameter()]
 		[System.String]
-		$ToolTip
+		$ToolTip,
+
+		[Parameter(DontShow)]
+		[switch]
+		$DoNotEscape
 	)
 	begin {
 

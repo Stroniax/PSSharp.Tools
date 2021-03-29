@@ -101,38 +101,75 @@ namespace PSSharp.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;#
-        ///.SYNOPSIS
-        ///Short description
+        ///   Looks up a localized string similar to [CmdletBinding()]
+        ///param(
+        ///	[Parameter()]
+        ///	[System.String]
+        ///	$commandName,
+        ///	
+        ///	[Parameter()]
+        ///	[System.String]
+        ///	$parameterName,
+        ///	
+        ///	[Parameter()]
+        ///	[System.String]
+        ///	$wordToComplete,
+        ///	
+        ///	[Parameter()]
+        ///	[System.Management.Automation.Language.CommandAst]
+        ///	$commandAst,
+        ///	
+        ///	[Parameter()]
+        ///	[System.Collections.IDictionary]
+        ///	$fakeBoundParameters
+        ///)
+        ///process {
+        ///	trap{break}
+        ///	[System.String[]]$Set = ,{0} | Where-Object {$_}
         ///
-        ///.DESCRIPTION
-        ///Long description
-        ///
-        ///.EXAMPLE
-        ///An example
-        ///
-        ///.NOTES
-        ///General notes
-        ///#&gt;
-        ///function SetCompletionAttribute {
-        ///	[CmdletBinding()]
-        ///	param(
-        ///
-        ///	)
-        ///	begin {
-        ///
-        ///	}
-        ///	process {
-        ///
-        ///	}
-        ///	end {
-        ///
-        ///	}
-        ///}.
+        ///	foreach ($item in $set) {
+        ///		if ($set -like $item) {
+        ///			New-CompletionResult  [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string SetCompletion {
             get {
                 return ResourceManager.GetString("SetCompletion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to [CmdletBinding()]
+        ///param(
+        ///	[Parameter()]
+        ///	[System.String]
+        ///	$commandName,
+        ///	
+        ///	[Parameter()]
+        ///	[System.String]
+        ///	$parameterName,
+        ///	
+        ///	[Parameter()]
+        ///	[System.String]
+        ///	$wordToComplete,
+        ///	
+        ///	[Parameter()]
+        ///	[System.Management.Automation.Language.CommandAst]
+        ///	$commandAst,
+        ///	
+        ///	[Parameter()]
+        ///	[System.Collections.IDictionary]
+        ///	$fakeBoundParameters
+        ///)
+        ///process {
+        ///	trap{break}
+        ///	[System.Boolean]$CompleteDefinition = {0}
+        ///
+        ///	$Variables = Get-Variable -Scope 1 -Name &quot;$wordToComplete*&quot;
+        ///	foreach ($variable in $ [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string VariableNameCompletion {
+            get {
+                return ResourceManager.GetString("VariableNameCompletion", resourceCulture);
             }
         }
     }
