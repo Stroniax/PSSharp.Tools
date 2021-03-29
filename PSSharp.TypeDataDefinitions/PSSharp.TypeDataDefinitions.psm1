@@ -1368,7 +1368,7 @@ using System;
 using System.Collections.Generic;
 using System.Management.Automation;
 namespace PSSharp.Runtime {
-	public static class TypeDataDefinitionsInitializer {
+	public static class TypeDataDefinitionInitializer {
 		public static bool TypeDataInitiallyImported {
 			get { return _added; }
 		}
@@ -1391,9 +1391,9 @@ namespace PSSharp.Runtime {
 	}
 }
 '@
-if (![PSSharp.Runtime.TypeDataDefinitionsInitializer]::TypeDataInitiallyImported) {
+if (![PSSharp.Runtime.TypeDataDefinitionInitializer]::TypeDataInitiallyImported) {
 	Import-TypeDataDefinitions -ErrorAction Ignore
-	[PSSharp.Runtime.TypeDataDefinitionsInitializer]::Subscribe({
+	[PSSharp.Runtime.TypeDataDefinitionInitializer]::Subscribe({
 		if (Test-TypeDataImportPreference -Assembly $_.LoadedAssembly) {
 			Import-TypeDataDefinitions -Assembly $_.LoadedAssembly
 		}
