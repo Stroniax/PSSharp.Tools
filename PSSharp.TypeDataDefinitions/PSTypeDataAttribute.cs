@@ -613,10 +613,13 @@ namespace PSSharp
     public static class StaticTests
     {
         [PSCodeMethodFromExtensionMethod]
-        public static bool IsNull(this string fromString) => fromString is null;
+        public static bool IsNull(this string fromString) 
+            => fromString is null;
         [PSCodePropertyFromExtensionMethod]
-        public static bool IsNullOrEmpty(this string fromString) => string.IsNullOrEmpty(fromString);
+        public static bool IsNullOrEmpty(this string fromString) 
+            => string.IsNullOrEmpty(fromString);
         [PSCodeMethodFromExtensionMethod]
-        public static string ToString(this List<string> array, string separator) => string.Join(separator, array);
+        public static string ToString(this List<string> array, string separator) 
+            => string.Join(separator, array);
     }
 }
