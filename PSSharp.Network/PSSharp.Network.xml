@@ -1,0 +1,248 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PSSharp.Network</name>
+    </assembly>
+    <members>
+        <member name="T:PSSharp.Commands.SendWakeOnLanCommand">
+            <summary>
+            <para type='synopsis'>Sends a magic packet to a target MAC address to indicate that the computer should turn on.</para>
+            <para type='description'>Sends a "magic packet" to a destination MAC address over UDP through the defined broadcast 
+            address (or [IPAddress]::Broadcast by default) to wake a target computer.</para>
+            </summary>
+        </member>
+        <member name="P:PSSharp.Commands.SendWakeOnLanCommand.MacAddress">
+            <summary>
+            <para type='description'>The mac address(es) to which the WakeOnLan command will be sent.</para>
+            </summary>
+        </member>
+        <member name="P:PSSharp.Commands.SendWakeOnLanCommand.BroadcastAddress">
+            <summary>
+            <para type='description'>Determines the address used to broadcast the packet.</para>
+            </summary>
+        </member>
+        <member name="P:PSSharp.Commands.SendWakeOnLanCommand.Port">
+            <summary>
+            <para type='description'>Determines the port to which the packet is sent.</para>
+            </summary>
+        </member>
+        <member name="M:PSSharp.Commands.SendWakeOnLanCommand.BeginProcessing">
+            <inheritdoc/>
+        </member>
+        <member name="M:PSSharp.Commands.SendWakeOnLanCommand.ProcessRecord">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.Commands.StartPingJobCommand">
+            <summary>
+            <para type='synopsis'>Initiates a job that waits for a successful <see cref="T:System.Net.NetworkInformation.Ping"/> reply.</para>
+            <para type='description'>Starts a <see cref="T:PSSharp.PingJob"/>, which pings a destination (host name or
+            IP address) until the ping returns successfully, at which time the job concludes.</para>
+            </summary>
+            <example>
+            <code>
+            PS:\> Start-PingJob localhost
+            Id     Name            PSJobTypeName   State         HasMoreData     Location             Command
+            --     ----            -------------   -----         -----------     --------             -------
+            1      Job1            PingJob         Completed     True            localhost            Start-PingJob localhost
+            
+            PS:\> Get-Job | Receive-Job
+            ComputerName Address
+            ------------ -------
+            localhost    ::1
+            </code>
+            A job started on the localhost will return immedately in a successful state.
+            </example>
+            <example>
+            <code>
+            PS:\> Start-PingJob -ComputerName Server02 | Wait-Job | Remove-Job</code>
+            Piping a PingJob directly into wait-job will pause the script until the target returns a successful ping response.
+            </example>
+            <example>
+            <code>
+            PS:\> $Servers = 'Server01','Server02'
+            PS:\> Stop-Computer -ComputerName $Servers -Force
+            PS:\> Start-Sleep -Seconds 90 # wait for computers to shut down
+            PS:\> Start-PingJob -ComputerName $Servers | Receive-Job -Wait -AutoRemoveJob | ForEach-Object { Invoke-Command -ComputerName $_.ComputerName -ScriptBlock $ServerStartupScript }
+            </code>
+            This example demonstrates starting ping jobs for multiple computers and using the results to wait for
+            a computer to come online before running a script on the computers. Note that a ping reply may indicate
+            success before the WSMan or similar remoting services have started on a computer.
+            </example>
+        </member>
+        <member name="P:PSSharp.Commands.StartPingJobCommand.ComputerName">
+            <summary>
+            <para type='description'>The ComputerName or IP address that will be pinged.</para>
+            </summary>
+        </member>
+        <member name="P:PSSharp.Commands.StartPingJobCommand.Name">
+            <summary>
+            <para type='description'>The name of the job.</para>
+            </summary>
+        </member>
+        <member name="M:PSSharp.Commands.StartPingJobCommand.ProcessRecord">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.Extensions.IPAddressExtensions">
+            <summary>
+            Extension methods for the <see cref="T:System.Net.IPAddress"/> class.
+            </summary>
+        </member>
+        <member name="M:PSSharp.Extensions.IPAddressExtensions.ToLong(System.Net.IPAddress)">
+            <summary>
+            Converts an IP address the associated <see cref="T:System.Int64"/> value.
+            </summary>
+            <param name="ipAddress">The address to be converted.</param>
+            <returns>The <see cref="T:System.Int64"/> value representation of <paramref name="ipAddress"/>.</returns>
+        </member>
+        <member name="T:PSSharp.IPv4SubnetRange">
+            <summary>
+            <para type="description">Represents information about a subnet range based on a given 
+            address and Cidr or subnet mask, including the broadcast address and range.</para>
+            </summary>
+        </member>
+        <member name="M:PSSharp.IPv4SubnetRange.Contains(System.Net.IPAddress)">
+            <summary>
+            Returns <see langword="true"/> if the given address exists within the range represented by this instance.
+            </summary>
+            <param name="address"></param>
+            <returns></returns>
+        </member>
+        <member name="T:PSSharp.IPv4TypeConverter">
+            <summary>
+            <para type="description">Converts IPv4 addresses to their <see cref="T:System.Double"/> or <see cref="T:System.Int64"/> values, and vice versa.</para>
+            </summary>
+        </member>
+        <member name="T:PSSharp.PingJob">
+            <summary>
+            A job representing consecutive ping operations until the target responds or
+            the job is stopped.
+            </summary>
+        </member>
+        <member name="P:PSSharp.PingJob.HasMoreData">
+            <inheritdoc/>
+        </member>
+        <member name="P:PSSharp.PingJob.Location">
+            <summary>The target of the <see cref="T:System.Net.NetworkInformation.Ping"/>.</summary>
+        </member>
+        <member name="P:PSSharp.PingJob.StatusMessage">
+            <summary>Indicates the status or error message of the most recent <see cref="T:System.Net.NetworkInformation.PingReply"/>.</summary>
+        </member>
+        <member name="F:PSSharp.PingJob._ping">
+            <summary>
+            The <see cref="T:System.Net.NetworkInformation.Ping"/> represented by this <see cref="T:PSSharp.PingJob"/>.
+            </summary>
+        </member>
+        <member name="M:PSSharp.PingJob.StopJob">
+            <summary>
+            Stops the <see cref="T:System.Net.NetworkInformation.Ping"/> loop.
+            </summary>
+        </member>
+        <member name="M:PSSharp.PingJob.Dispose(System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:PSSharp.PingJob.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.PingJob.PingJobOutput">
+            <summary>
+            Represents information regarding the response of the most recent ping.
+            </summary>
+        </member>
+        <member name="P:PSSharp.PingJob.PingJobOutput.ComputerName">
+            <summary>
+            The target of the ping.
+            </summary>
+        </member>
+        <member name="P:PSSharp.PingJob.PingJobOutput.Address">
+            <summary>
+            The address from which the response was received.
+            </summary>
+        </member>
+        <member name="T:PSSharp.WakeOnLan">
+            <summary>
+            <para type="description">Provides static methods to wake remote computers. As an instance, contains information about a sent packet.</para>
+            </summary>
+        </member>
+        <member name="F:PSSharp.WakeOnLan.DefaultPort">
+            <summary>
+            The default port that Wake On Lan packets will be sent to if not set explicitly.
+            </summary>
+        </member>
+        <member name="P:PSSharp.WakeOnLan.MacAddress">
+            <summary>
+            The mac address to which the wake on lan packet was sent.
+            </summary>
+        </member>
+        <member name="P:PSSharp.WakeOnLan.BroadcastAddress">
+            <summary>
+            The broadcast address used to send the wake on lan packet. Default is <see cref="F:System.Net.IPAddress.Broadcast"/>.
+            </summary>
+        </member>
+        <member name="P:PSSharp.WakeOnLan.Port">
+            <summary>
+            The port that the wake on lan packet was sent to. Default is <see cref="F:PSSharp.WakeOnLan.DefaultPort"/> (9).
+            </summary>
+        </member>
+        <member name="P:PSSharp.WakeOnLan.BytesSent">
+            <summary>
+            The number of bytes sent to the client.
+            </summary>
+        </member>
+        <member name="P:PSSharp.WakeOnLan.Sent">
+            <summary>
+            The time at which the packet was sent.
+            </summary>
+        </member>
+        <member name="M:PSSharp.WakeOnLan.#ctor(System.String,System.Net.IPAddress,System.UInt16,System.Int32)">
+            <summary>
+            Constructor for setting values privately.
+            </summary>
+            <param name="macAddress"></param>
+            <param name="broadcastAddress"></param>
+            <param name="port"></param>
+            <param name="bytesSent"></param>
+        </member>
+        <member name="M:PSSharp.WakeOnLan.Send(System.String)">
+            <summary>
+            Sends a magic packet to wake the computer at the provided mac address, using defaults of <see cref="F:System.Net.IPAddress.Broadcast"/> and <see cref="F:PSSharp.WakeOnLan.DefaultPort"/>.
+            </summary>
+            <param name="macAddress">The physical (mac) address of the computer that the packet will be sent to.</param>
+            <returns>A <see cref="T:PSSharp.WakeOnLan"/> instance containing information about the packet sent.</returns>
+        </member>
+        <member name="M:PSSharp.WakeOnLan.Send(System.String,System.Net.IPAddress)">
+            <summary>
+            Sends a magic packet to wake the computer at the provided mac address, using the default of <see cref="F:System.Net.IPAddress.Broadcast"/>.
+            </summary>
+            <param name="macAddress">The physical (mac) address of the computer that the packet will be sent to.</param>
+            <param name="broadcastAddress">The broadcast address that the packet will be sent to. Usually <see cref="F:System.Net.IPAddress.Broadcast"/></param>
+            <returns>A <see cref="T:PSSharp.WakeOnLan"/> instance containing information about the packet sent.</returns>
+        </member>
+        <member name="M:PSSharp.WakeOnLan.Send(System.String,System.UInt16)">
+            <summary>
+            Sends a magic packet to wake the computer at the provided mac address, using the default of <see cref="F:PSSharp.WakeOnLan.DefaultPort"/>.
+            </summary>
+            <param name="macAddress">The physical (mac) address of the computer that the packet will be sent to.</param>
+            <param name="port">The port that the magic packet will be sent to.</param>
+            <returns>A <see cref="T:PSSharp.WakeOnLan"/> instance containing information about the packet sent.</returns>
+        </member>
+        <member name="M:PSSharp.WakeOnLan.Send(System.String,System.Net.IPAddress,System.UInt16)">
+            <summary>
+            Sends a magic packet to wake the computer at the provided mac address, with all values explicitly set.
+            </summary>
+            <param name="macAddress">The physical (mac) address of the computer that the packet will be sent to.</param>
+            <param name="broadcastAddress">The broadcast address that the packet will be sent to. Usually <see cref="F:System.Net.IPAddress.Broadcast"/></param>
+            <param name="port">The port that the magic packet will be sent to.</param>
+            <returns>A <see cref="T:PSSharp.WakeOnLan"/> instance containing information about the packet sent.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="macAddress"/> or <paramref name="broadcastAddress"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="port"/> is 0.</exception>
+            <exception cref="T:System.ArgumentException"><paramref name="macAddress"/> is an invalid format or length. 
+            Should be "00:00:00:00:00:00", but may use spaces (" ") or hyphens ("-") as delimiters.</exception>
+        </member>
+        <member name="M:PSSharp.WakeOnLan.GetMagicPacket(System.String)">
+            <summary>
+            Creates the magic packet based on the provided mac address.
+            </summary>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
