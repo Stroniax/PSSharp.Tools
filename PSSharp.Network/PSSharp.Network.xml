@@ -4,6 +4,138 @@
         <name>PSSharp.Network</name>
     </assembly>
     <members>
+        <member name="T:PSSharp.Commands.ConvertIpv4ToNumberCommand">
+            <summary>
+            <para type="synopsis">Converts IPv4 addresses to their number value.</para>
+            <para type="description">Converts one or more IPv4 address values (in the 
+            <see cref="F:System.Net.Sockets.AddressFamily.InterNetwork"/> address family)
+            to a number value representing the address. Though using this module indicates
+            that you have a reason for it already, this conversion is most often used for 
+            comparison or data storage.</para>
+            </summary>
+            <example>
+            <code>
+            PS:\ > Convert-IPv4ToNumber -InputObject 192.168.50.3
+            3232248323
+            </code>
+            </example>
+            <example>
+            <code>
+            PS:\ > Get-DhcpServerv4Scope -ComputerName Server01 | Get-DhcpServerv4Lease -ComputerName Server01 | Convert-IPv4ToNumber 
+            2887165501
+            2887165502
+            2887165503
+            [ additional rows omitted ]
+            </code>
+            <para type="description">Values can be piped into the cmdlet by value as well as by property name.</para>
+            </example>
+        </member>
+        <member name="P:PSSharp.Commands.ConvertIpv4ToNumberCommand.InputObject">
+            <summary>
+            <para type="description">The IPv4 address value(s) to convert to numbers.
+            The values provided must be in the InterNetwork (IPv4) address family: 
+            values cannot be greater than [IPAddress]::Broadcast (255.255.255.255)
+            or less than [IPAddress]::Any (0.0.0.0).</para>
+            </summary>
+        </member>
+        <member name="M:PSSharp.Commands.ConvertIpv4ToNumberCommand.ProcessRecord">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.Commands.ConvertNumberToIPv4Command">
+            <summary>
+            <para type="synopsis">Converts a number to an IPv4 address.</para>
+            <para type="description">
+            Converts a number ([double] or [long]) to an IPv4 address.
+            Any number value between 0 and 4294967295 can be converted to an IPv4 address.
+            </para>
+            </summary>
+            <example>
+            <code>
+            PS:\ > Convert-NumberToIPv4 -InputObject 3232248323
+            Address            : 53651648
+            AddressFamily      : InterNetwork
+            ScopeId            :
+            IsIPv6Multicast    : False
+            IsIPv6LinkLocal    : False
+            IsIPv6SiteLocal    : False
+            IsIPv6Teredo       : False
+            IsIPv4MappedToIPv6 : False
+            IPAddressToString  : 192.168.50.3
+            </code>
+            </example>
+            <example>
+            <code>
+            PS:\ > 3232248320..3232248323 | Convert-NumberToIPv4 | Select AddressFamily, IPAddressToString
+            AddressFamily IPAddressToString
+            ------------- -----------------
+             InterNetwork 192.168.50.0
+             InterNetwork 192.168.50.1
+             InterNetwork 192.168.50.2
+             InterNetwork 192.168.50.3
+            </code>
+            <para type="description">Values can be piped into the cmdlet by value as well as by property name.</para>
+            </example>
+        </member>
+        <member name="P:PSSharp.Commands.ConvertNumberToIPv4Command.InputObject">
+            <summary>
+            <para type='description'>The number value(s) of any IPAddress(es) to convert. 
+            Each value will be converted to an <see cref="T:System.Net.IPAddress"/>. The value cannot 
+            be less than 0 or greater than 4294967295.</para>
+            </summary>
+        </member>
+        <member name="M:PSSharp.Commands.ConvertNumberToIPv4Command.ProcessRecord">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.Commands.GetIPv4SubnetRange">
+            <summary>
+            <para type="synopsis">Gets the IP subnet range of a given address and CIDR or subnet mask.</para>
+            <para type="description">Identifies and returns the subnet range of a given address and 
+            corresponding CIDR or subnet mask. Returns the broadcast address (the end of the range), 
+            the subnet address (often the scope id - the beginning of the range), and the subnet mask.
+            </para>
+            </summary>
+            <example>
+            <code>
+            PS:\ > Get-IPv4SubnetRange -CidrNotation '172.22.78.0/24' | Select *
+            
+            CidrNotation      : 172.22.78.0/24
+            SubnetMask        : 255.255.255.0
+            NetworkAddress    : 172.22.78.0
+            BroadcastAddress  : 172.22.78.255
+            StartRange        : 172.22.78.1
+            EndRange          : 172.22.78.254
+            Range             : { 172.22.78.1, 172.22.78.2, 172.22.78.3 ... }
+            IPAddress         : 172.22.78.0
+            </code>
+            </example>
+        </member>
+        <member name="P:PSSharp.Commands.GetIPv4SubnetRange.NetworkAddress">
+            <summary>
+            <para type="description">The IPv4 network address of the subnet; for example, '192.168.150.0'.</para>
+            </summary>
+        </member>
+        <member name="P:PSSharp.Commands.GetIPv4SubnetRange.CIDR">
+            <summary>
+            <para type="description">The CIDR value of the subnet; for example, the '24' in '192.168.150.0/24'. 
+            This value is converted to a subnet with the equivalent number of bits set to true: a CIDR value of 24
+            will result in a subnet with binary value '11111111.11111111.11111111.00000000', equivalent to
+            '255.255.255.0'.</para>
+            </summary>
+        </member>
+        <member name="P:PSSharp.Commands.GetIPv4SubnetRange.SubnetMask">
+            <summary>
+            <para type="description">The mask of the subnet, such as '255.255.255.0'.</para>
+            </summary>
+        </member>
+        <member name="P:PSSharp.Commands.GetIPv4SubnetRange.CidrNotation">
+            <summary>
+            <para type="description">The network address and CIDR separated by a forward slash: for example, '192.168.150.0/24'. 
+            This value is split and parsed to determine the network address and subnet mask.</para>
+            </summary>
+        </member>
+        <member name="M:PSSharp.Commands.GetIPv4SubnetRange.ProcessRecord">
+            <inheritdoc/>
+        </member>
         <member name="T:PSSharp.Commands.SendWakeOnLanCommand">
             <summary>
             <para type='synopsis'>Sends a magic packet to a target MAC address to indicate that the computer should turn on.</para>

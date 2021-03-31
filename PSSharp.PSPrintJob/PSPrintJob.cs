@@ -28,9 +28,11 @@ namespace PSSharp
 
         internal PSPrintJob(CimInstance cimPrintJobInstance)
             :base(null, 
-                 (string)cimPrintJobInstance.CimInstanceProperties["Caption"].Value,
-                 Guid.Parse((string)cimPrintJobInstance.CimInstanceProperties["InstanceId"].Value))
+                 (string)cimPrintJobInstance.CimInstanceProperties["DocumentName"].Value
+                 //Guid.Parse((string)cimPrintJobInstance.CimInstanceProperties["InstanceId"].Value)
+                 )
         {
+            PSJobTypeName = nameof(PSPrintJob);
             _source = cimPrintJobInstance;
             ComputerName = _source.CimSystemProperties.ServerName;
             PrinterName = (string)_source.CimInstanceProperties["PrinterName"].Value;

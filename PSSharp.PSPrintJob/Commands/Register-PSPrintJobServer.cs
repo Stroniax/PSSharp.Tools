@@ -1,12 +1,15 @@
 ﻿using System.Management.Automation;
 
-namespace PSSharp
+namespace PSSharp.Commands
 {
     [Cmdlet(VerbsLifecycle.Register, "PSPrintJobServer")]
     public class RegisterPSPrintJobServerCommand : PSCmdlet
     {
-        public string ComputerName { get; set; }
-        public string PrinterName { get; set; }
-
+        [Parameter(Mandatory = true, Position = 0, ValueFromPipelineByPropertyName = true)]
+        public string ComputerName { get; set; } = null!;
+        protected override void ProcessRecord()
+        {
+            PSPrintJobSourceAdapter.PrintJobServers.Add(ComputerName);
+        }
     }
 }

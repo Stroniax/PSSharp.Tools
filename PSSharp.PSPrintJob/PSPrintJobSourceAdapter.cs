@@ -9,7 +9,7 @@ namespace PSSharp
     public class PSPrintJobSourceAdapter : JobSourceAdapter
     {
         internal static ConcurrentBag<string> PrintJobServers { get; } = new ConcurrentBag<string>();
-        internal static ConcurrentDictionary<Guid, PSPrintJob> Jobs { get; }
+        internal static ConcurrentDictionary<Guid, PSPrintJob> Jobs { get; } = new ConcurrentDictionary<Guid, PSPrintJob>();
         public override Job2? GetJobByInstanceId(Guid instanceId, bool recurse)
         {
             if (Jobs.TryGetValue(instanceId, out var job))

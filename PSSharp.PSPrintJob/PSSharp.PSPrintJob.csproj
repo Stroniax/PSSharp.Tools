@@ -5,12 +5,24 @@
 		<RootNamespace>PSSharp</RootNamespace>
 		<LangVersion>8</LangVersion>
 		<Nullable>enable</Nullable>
-		<PSModuleName>PSSharp.PrintJob</PSModuleName>
+		<PSModuleName>PSSharp.PSPrintJob</PSModuleName>
+		<PSDebugScript Condition="'$(DebugScript)'==''">$(ProjectDir)Debug.ps1</PSDebugScript>
+		<PSPrebuildScript Condition="'$(PrebuildScript)'==''">$(ProjectDir)Prebuild.ps1</PSPrebuildScript>
+		<PSPostbuildScript Condition="'$(PostbuildScript)'==''">$(ProjectDir)Postbuild.ps1</PSPostbuildScript>
+		<PowerShellPath>%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe</PowerShellPath>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Management.Infrastructure" Version="2.0.0" />
 		<PackageReference Include="PowerShellStandard.Library" Version="5.1.0" />
 	</ItemGroup>
+
+	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+	  <Exec Command="$(PowerShellPath) -NoProfile -ExecutionPolicy RemoteSigned -File $(PSPrebuildScript) -Configuration $(ConfigurationName) -ProjectName $(ProjectName) -TargetName $(TargetName) -TargetPath $(TargetPath) -TargetDirectory $(TargetDir) -ProjectDirectory $(ProjectDir) -ModuleName $(PSModuleName)" />
+	</Target>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+	  <Exec Command="$(PowerShellPath) -NoProfile -ExecutionPolicy RemoteSigned -File $(PSPostbuildScript) -Configuration $(ConfigurationName) -ProjectName $(ProjectName) -TargetName $(TargetName) -TargetPath $(TargetPath) -TargetDirectory $(TargetDir) -ProjectDirectory $(ProjectDir) -ModuleName $(PSModuleName)" />
+	</Target>
 
 </Project>
