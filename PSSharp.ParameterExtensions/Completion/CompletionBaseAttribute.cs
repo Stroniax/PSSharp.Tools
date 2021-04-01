@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Management.Automation;
+using System.Management.Automation.Language;
 
 namespace PSSharp
 {
@@ -37,6 +38,20 @@ namespace PSSharp
                 // pass arguments as named variables to avoid conflict with $args[]
                 .InvokeWithContext(null, new List<PSVariable>() { new PSVariable("psBuildCompletionConstructor", completerConstructor) })[0]
                 .BaseObject;
+        }
+
+        protected static CompletionResult CreateCompletionResult(string value, bool escapeVariables = true)
+        {
+            if (value.Contains("'") || value.Contains(" ") || (escapeVariables && value.Contains("$")))
+            {
+                var val = CodeGeneration.EscapeSingleQuotedStringContent(value);
+                if (escapeVariables) val = CodeGeneration.EscapeVariableName(val);
+                return new CompletionResult("'" + val + "'", value, CompletionResultType.ParameterValue, value);
+            }
+            else
+            {
+                return new CompletionResult(value, value, CompletionResultType.ParameterValue, value);
+            }
         }
     }
 }
