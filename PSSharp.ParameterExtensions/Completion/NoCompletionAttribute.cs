@@ -12,13 +12,13 @@ namespace PSSharp
     /// when ideal argument completion is not possible and a path argument completion
     /// is not desired.
     /// </summary>
-    public class NoArgumentCompletionAttribute : ArgumentCompleterAttribute, IArgumentCompleter
+    public class NoCompletionAttribute : ArgumentCompleterAttribute, IArgumentCompleter
     {
         /// <summary>
         /// Indicates that no argument completion should be offered.
         /// </summary>
-        public NoArgumentCompletionAttribute()
-            : base(typeof(NoArgumentCompletionAttribute))
+        public NoCompletionAttribute()
+            : base(typeof(NoCompletionAttribute))
         {
         }
         /// <summary>
