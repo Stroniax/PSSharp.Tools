@@ -8,7 +8,7 @@ using System.Text;
 
 namespace PSSharp
 {
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class VariableNameCompletionAttribute : ArgumentCompleterAttribute
     {
         public VariableNameCompletionAttribute(bool completeDefinition = false)
