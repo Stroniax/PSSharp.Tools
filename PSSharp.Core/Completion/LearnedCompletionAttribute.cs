@@ -18,7 +18,7 @@ namespace PSSharp
     ///     param (
     ///         [Parameter(Position = 0, Mandatory)]
     ///         [PSSharp.CompletionLearner("Use-LearnedCompletion", "SpecialParameter")]
-    ///         [PSSharp.LearningCompletion("Use-LearnedCompletion", "SpecialParameter")]
+    ///         [PSSharp.LearnedCompletion("Use-LearnedCompletion", "SpecialParameter")]
     ///         [System.String[]]
     ///         $SpecialParameter
     ///     )
