@@ -61,6 +61,29 @@ namespace PSSharp.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to using namespace System.Collections;
+        ///using namespace System.Management.Automation;
+        ///using namespace System.Management.Automation.Language;
+        ///
+        ///param(
+        ///	[string]$commandName, 
+        ///	[string]$parameterName, 
+        ///	[string]$wordToComplete, 
+        ///	[CommandAst]$commandAst, 
+        ///	[IDictionary]$fakeBoundParameters
+        ///)
+        ///if ($parameterName -eq &apos;Parameter&apos; -or $parameterName -eq &apos;ParameterName&apos;) {
+        ///	(Get-Command &quot;$($fakeBoundParameters[&apos;Command&apos;])$($fakeBoundParameters[&apos;CommandName&apos;])*&quot;).Parameters.Keys `
+        ///	| ForEach-Object { 
+        ///		ret [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string CommandParameterCompletion {
+            get {
+                return ResourceManager.GetString("CommandParameterCompletion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to [CmdletBinding()]
         ///param(
         ///	[Parameter()]
