@@ -10,7 +10,7 @@ namespace PSSharp
     // before it has been converted. ArgumentTransformationAttributes are applied before the
     // implicit PowerShell type casting system, which is applied before parameter validation,
     // and are permitted to throw ArgumentException if the argument is invalid.
-    public class ValidateFlaglessEnumAttribute : ArgumentTransformationAttribute
+    public class FlaglessEnumValidationAttribute : ArgumentTransformationAttribute
     {
         public override object Transform(EngineIntrinsics engineIntrinsics, object inputData)
         {

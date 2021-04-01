@@ -5,20 +5,20 @@ using System.Text;
 
 namespace PSSharp
 {
-    public sealed class WildcardExpansionScriptAttribute : ExpandWildcardsAttribute
+    public sealed class ScriptExpansionAttribute : WildcardExpansionAttribute
     {
-        private WildcardExpansionScriptAttribute()
+        private ScriptExpansionAttribute()
         {
             AllowNullOrEmptyTransformation = false;
             AllowTransformNonStrings = false;
             AllowTransformNonWildcardStrings = false;
         }
-        public WildcardExpansionScriptAttribute(string script)
+        public ScriptExpansionAttribute(string script)
             :this()
         {
             Script = ScriptBlock.Create(script);
         }
-        public WildcardExpansionScriptAttribute(ScriptBlock script)
+        public ScriptExpansionAttribute(ScriptBlock script)
             :this()
         {
             Script = script;

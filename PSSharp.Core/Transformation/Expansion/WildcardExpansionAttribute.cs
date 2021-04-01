@@ -7,7 +7,7 @@ using System.Text;
 
 namespace PSSharp
 {
-    public abstract class ExpandWildcardsAttribute : FlatteningTransformationAttribute
+    public abstract class WildcardExpansionAttribute : FlatteningTransformationAttribute
     {
         protected sealed override IEnumerable<object?> TransformMany(object inputData, EngineIntrinsics engineIntrinsics)
         {

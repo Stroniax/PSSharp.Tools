@@ -16,7 +16,7 @@ namespace PSSharp
     /// <see cref="ProviderInfo.ImplementingType"/> of the argument(s) provided matches <see cref="ImplementingType"/>.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
-    public sealed class ExpandPathAttribute : ExpandWildcardsAttribute
+    public sealed class PathExpansionAttribute : WildcardExpansionAttribute
     {
         /// <summary>
         /// Indicates that any number of results will be accepted.
@@ -54,7 +54,7 @@ namespace PSSharp
         }
         private int? _resultsCount;
         /// <param name="isLiteralPath">Generally for a "Path" parameter this will be false and for a "LiteralPath" or "PSPath" parameter this will be true. When false, wildcards are expanded using <see cref="PathIntrinsics.GetResolvedProviderPathFromPSPath(string, out ProviderInfo)"/>. When true, wildcards are not expanded and the provider is obtained using <see cref="PathIntrinsics.GetUnresolvedProviderPathFromPSPath(string, out ProviderInfo, out PSDriveInfo)"/>.</param>
-        public ExpandPathAttribute(bool isLiteralPath)
+        public PathExpansionAttribute(bool isLiteralPath)
         {
             IsLiteralPath = isLiteralPath;
         }

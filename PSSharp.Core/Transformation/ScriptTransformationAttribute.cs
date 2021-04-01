@@ -6,14 +6,14 @@ using System.Text;
 
 namespace PSSharp
 {
-    public class TransformationScriptAttribute : FlatteningTransformationAttribute
+    public class ScriptTransformationAttribute : FlatteningTransformationAttribute
     {
         public ScriptBlock Script { get; }
-        public TransformationScriptAttribute(string scriptText)
+        public ScriptTransformationAttribute(string scriptText)
         {
             Script = ScriptBlock.Create(scriptText);
         }
-        public TransformationScriptAttribute(ScriptBlock script)
+        public ScriptTransformationAttribute(ScriptBlock script)
         {
             Script = script;
         }
