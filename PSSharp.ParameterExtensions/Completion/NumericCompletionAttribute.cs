@@ -50,7 +50,7 @@ namespace PSSharp
                 {
                     if (wc.IsMatch(wordToComplete))
                     {
-                        yield return new CompletionResult(i.ToString(), i.ToString(), CompletionResultType.ParameterValue, i.ToString());
+                        yield return CreateCompletionResult(i.ToString());
                         suggested++;
                     }
                     if (suggested == short.MaxValue) yield break;
