@@ -7,7 +7,7 @@ using System.Xml.Serialization;
 namespace PSSharp
 {
     /// <summary>
-    /// Data used for <see cref="LearningCompletionAttribute"/> and <see cref="CompletionLearnerAttribute"/>.
+    /// Data used for <see cref="LearnedCompletionAttribute"/> and <see cref="CompletionLearnerAttribute"/>.
     /// </summary>
     public class LearnedCompletionData
     {

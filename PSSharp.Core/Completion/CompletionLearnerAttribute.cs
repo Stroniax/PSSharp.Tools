@@ -4,7 +4,7 @@ namespace PSSharp
 {
     /// <summary>
     /// <para type='description'>Apply to PowerShell parameters to learn parameters that can later
-    /// be recommended by the <see cref="LearningCompletionAttribute"/>.</para>
+    /// be recommended by the <see cref="LearnedCompletionAttribute"/>.</para>
     /// </summary>
     /// <example>
     /// <code>
@@ -22,13 +22,13 @@ namespace PSSharp
     ///     }
     /// }
     /// </code>
-    /// This example demonstrates using the <see cref="CompletionLearnerAttribute"/> and <see cref="LearningCompletionAttribute"/> for a parameter of a PowerShell function.
+    /// This example demonstrates using the <see cref="CompletionLearnerAttribute"/> and <see cref="LearnedCompletionAttribute"/> for a parameter of a PowerShell function.
     /// </example>
     public sealed class CompletionLearnerAttribute : ValidateArgumentsAttribute
     {
         /// <summary>
         /// Apply to PowerShell parameters to learn parameters that can later
-        /// be recommended by the <see cref="LearningCompletionAttribute"/>.
+        /// be recommended by the <see cref="LearnedCompletionAttribute"/>.
         /// </summary>
         /// <param name="command">The command that values will be associated with for future completion. 
         /// Generally, use the name of the command this attribute is being applied to.</param>

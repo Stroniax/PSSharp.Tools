@@ -27,14 +27,14 @@ namespace PSSharp
     ///     }
     /// }
     /// </code>
-    /// This example demonstrates using the <see cref="CompletionLearnerAttribute"/> and <see cref="LearningCompletionAttribute"/> for a parameter of a PowerShell function.
+    /// This example demonstrates using the <see cref="CompletionLearnerAttribute"/> and <see cref="LearnedCompletionAttribute"/> for a parameter of a PowerShell function.
     /// </example>
-    public sealed class LearningCompletionAttribute : CompletionBaseAttribute
+    public sealed class LearnedCompletionAttribute : CompletionBaseAttribute
     {
         /// <summary>
         /// Uses the names of the command and parameter of the executing command to retrieve completion results.
         /// </summary>
-        public LearningCompletionAttribute()
+        public LearnedCompletionAttribute()
             : base (() => new Completer(null, null))
         {
 
@@ -43,7 +43,7 @@ namespace PSSharp
         /// Uses the names of the command and parameter provided to retrieve completion results. This can be used
         /// to share completion between multiple commands that have a similar expected usage value set.
         /// </summary>
-        public LearningCompletionAttribute(string? learningCommand, string? learningParameter)
+        public LearnedCompletionAttribute(string? learningCommand, string? learningParameter)
             : base(() => new Completer(learningCommand, learningParameter))
         {
 
