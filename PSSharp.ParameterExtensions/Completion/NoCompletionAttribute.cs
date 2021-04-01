@@ -25,8 +25,6 @@ namespace PSSharp
         /// Returns nothing.
         /// </summary>
         public IEnumerable<CompletionResult> CompleteArgument(string commandName, string parameterName, string wordToComplete, CommandAst commandAst, IDictionary fakeBoundParameters)
-        {
-            yield break;
-        }
+            => Array.Empty<CompletionResult>();
     }
 }
