@@ -3,23 +3,23 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<ApplicationIcon>PowerShellIcon.ico</ApplicationIcon>
-		<AssemblyName>PSSharp.Network</AssemblyName>
-		<RootNamespace>PSSharp</RootNamespace>
+		<AssemblyName>PSSharp.TypeExtensions</AssemblyName>
+		<RootNamespace>PSSharp.TypeExtensions</RootNamespace>
 		<LangVersion>8.0</LangVersion>
 		<Nullable>enable</Nullable>
 		<DebugScript Condition="'$(DebugScript)'==''">$(ProjectDir)Debug.ps1</DebugScript>
 		<PrebuildScript Condition="'$(PrebuildScript)'==''">$(ProjectDir)Prebuild.ps1</PrebuildScript>
 		<PostbuildScript Condition="'$(PostbuildScript)'==''">$(ProjectDir)Postbuild.ps1</PostbuildScript>
 		<PowerShellPath>%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe</PowerShellPath>
-		<ModuleName>PSSharp.PingJob</ModuleName>
+		<ModuleName>PSSharp.TypeExtensions</ModuleName>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<DocumentationFile>PSSharp.PingJob.xml</DocumentationFile>
+		<DocumentationFile>PSSharp.TypeExtensions.xml</DocumentationFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-	  <DocumentationFile>PSSharp.Network.xml</DocumentationFile>
+	  <DocumentationFile>PSSharp.TypeExtensions.xml</DocumentationFile>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -40,6 +40,10 @@
 		<None Update="Debug.ps1">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\PSSharp.ParameterExtensions\PSSharp.Core.csproj" />
 	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">

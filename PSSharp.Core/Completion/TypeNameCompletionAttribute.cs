@@ -25,7 +25,11 @@ namespace PSSharp
         public IEnumerable<CompletionResult> CompleteArgument(string commandName, string parameterName, string wordToComplete, CommandAst commandAst, IDictionary fakeBoundParameters)
         {
             var wc = new WildcardPattern(wordToComplete?.Trim("\"'()[]".ToCharArray()) + "*", WildcardOptions.IgnoreCase);
-            var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).Where(t => t.IsPublic).Select(t => (t.FullName, t.Name)).Where(n => wc.IsMatch(n.Name) || wc.IsMatch(n.FullName));
+            var types = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(a => a.GetTypes())
+                .Where(t => t.IsPublic)
+                .Select(t => (t.FullName, t.Name))
+                .Where(n => wc.IsMatch(n.Name) || wc.IsMatch(n.FullName));
             foreach (var (FullName, Name) in types)
             {
                 string safeOutput = FullName.Contains(" ") ? "'" + CodeGeneration.EscapeSingleQuotedStringContent(FullName) + "'" : FullName;

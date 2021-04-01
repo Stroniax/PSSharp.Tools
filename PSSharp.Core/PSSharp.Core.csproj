@@ -5,7 +5,7 @@
 		<RootNamespace>PSSharp</RootNamespace>
 		<LangVersion>8</LangVersion>
 		<Nullable>enable</Nullable>
-		<PSModuleName>PSSharp.ParameterExtensions</PSModuleName>
+		<PSModuleName>PSSharp.Core</PSModuleName>
 		<PSDebugScript Condition="'$(DebugScript)'==''">$(ProjectDir)Debug.ps1</PSDebugScript>
 		<PSPrebuildScript Condition="'$(PrebuildScript)'==''">$(ProjectDir)Prebuild.ps1</PSPrebuildScript>
 		<PSPostbuildScript Condition="'$(PostbuildScript)'==''">$(ProjectDir)Postbuild.ps1</PSPostbuildScript>
