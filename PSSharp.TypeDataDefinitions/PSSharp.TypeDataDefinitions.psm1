@@ -1019,6 +1019,52 @@ function Import-TypeDataDefinitions {
 					continue
 				}
 			}
+			elseif ($TypeDataDefinition.AttributeDefinition -is [PSSharp.PSTypeAccelerator]) {
+				$TypeAcceleratorName = $TypeDataDefinition.AttributeDefinition.Name
+				if ([System.String]::IsNullOrWhiteSpace($TypeAcceleratorName)) {
+					$ex = [PSSharp.TypeDataDefinitionException]::new(
+						'An invalid TypeAccelerator name was provided. A type accelerator name must be unique and cannot be null, empty, or consist only of whitespace.',
+						'TypeAccelerator',
+						$TypeDataDefinition.AttributeTarget.Name,
+						$TypeAcceleratorName
+					)
+					$er = [System.Management.Automation.ErrorRecord]::new(
+						$ex,
+						'TypeAcceleratorNullOrWhiteSpace',
+						[System.Management.Automation.ErrorCategory]::MetadataError,
+						$TypeDataDefinition
+					)
+					$er.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
+						"The TypeAccelerator defined for $( $TypeDataDefinition.AttributeTarget ) cannot be " +
+						"applied. The TypeAccelerator name provided cannot be null, empty, or consist only of whitespace."
+					)
+					$PSCmdlet.WriteError($er)
+					continue
+				}
+				$TypeAccelerator = [PSObject].Assembly.GetType('System.Management.Automation.TypeAccelerators')
+				if ($TypeAccelerator::Get.Keys -contains $TypeAcceleratorName) {
+					$ex = [PSSharp.TypeDataDefinitionException]::new(
+						'An invalid TypeAccelerator name was provided. A type accelerator exists with the name provided.',
+						'TypeAccelerator',
+						$TypeDataDefinition.AttributeTarget.Name,
+						$TypeAcceleratorName
+					)
+					$er = [System.Management.Automation.ErrorRecord]::new(
+						$ex,
+						'TypeAcceleratorNullOrWhiteSpace',
+						[System.Management.Automation.ErrorCategory]::MetadataError,
+						$TypeDataDefinition
+					)
+					$er.ErrorDetails = [System.Management.Automation.ErrorDetails]::new(
+						"The TypeAccelerator defined for $( $TypeDataDefinition.AttributeTarget ) cannot be " +
+						"applied. The TypeAccelerator name provided is not unique."
+					)
+					$PSCmdlet.WriteError($er)
+					continue
+				}
+				$TypeAccelerator::Add($TypeAcceleratorName, $TypeDataDefinition.AttributeTarget)
+				continue
+			}
 			else {
 				# Errors will be handled below. SetParameters() provides abnormal invocation info
 				try {
