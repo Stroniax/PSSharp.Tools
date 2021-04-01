@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; 
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +23,8 @@ namespace PSSharp
     ///         $SpecialParameter
     ///     )
     ///     process {
-    ///         "Special Parameter '$SpecialParameter' is learned. Try using this function again and press [Tab] key to see your learned completion results!"
+    ///         "Special Parameter '$SpecialParameter' is learned. Try using this function again " +
+    ///         "and press the [Tab] key to see your learned completion results!"
     ///     }
     /// }
     /// </code>
