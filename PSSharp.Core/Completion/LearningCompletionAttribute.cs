@@ -61,8 +61,8 @@ namespace PSSharp
             {
                 var wc = WildcardPattern.Get(wordToComplete + "*", WildcardOptions.IgnoreCase);
                 return LearnedCompletionData.GetLearnedCompletions()
-                    .Where(lcd =>lcd.Command.Equals(_learnFromCommand ?? commandName, StringComparison.OrdinalIgnoreCase))
-                    .Where(lcd => lcd.Parameter.Equals(_learnFromParameter ?? parameterName, StringComparison.OrdinalIgnoreCase))
+                    .Where(lcd =>lcd.CommandName.Equals(_learnFromCommand ?? commandName, StringComparison.OrdinalIgnoreCase))
+                    .Where(lcd => lcd.ParameterName.Equals(_learnFromParameter ?? parameterName, StringComparison.OrdinalIgnoreCase))
                     .SelectMany(lcd => lcd.Completions)
                     .Where(c => wc.IsMatch(c))
                     .Select(c => CreateCompletionResult(c))

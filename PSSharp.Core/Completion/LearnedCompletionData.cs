@@ -19,8 +19,8 @@ namespace PSSharp
             string parameter,
             params string[] completions)
         {
-            Command = command;
-            Parameter = parameter;
+            CommandName = command;
+            ParameterName = parameter;
             Completions.AddRange(completions);
         }
         internal static string LearningStoragePath =>
@@ -45,12 +45,12 @@ namespace PSSharp
         }
         internal static void LearnCompletion(string command, string parameter, string value)
         {
-            var currentData = GetLearnedCompletions();
+            var completions = GetLearnedCompletions();
             var foundExisting = false;
-            foreach (var item in currentData)
+            foreach (var item in completions)
             {
-                if (item.Command.Equals(command, StringComparison.OrdinalIgnoreCase)
-                    && item.Parameter.Equals(parameter, StringComparison.OrdinalIgnoreCase))
+                if (item.CommandName.Equals(command, StringComparison.OrdinalIgnoreCase)
+                    && item.ParameterName.Equals(parameter, StringComparison.OrdinalIgnoreCase))
                 {
                     foundExisting = true;
                     if (item.Completions.Contains(value, StringComparer.OrdinalIgnoreCase))
@@ -65,9 +65,13 @@ namespace PSSharp
             }
             if (!foundExisting)
             {
-                currentData.Add(new LearnedCompletionData(command, parameter, value));
+                completions.Add(new LearnedCompletionData(command, parameter, value));
             }
 
+            SetLearnedCompletions(completions);
+        }
+        internal static void SetLearnedCompletions(List<LearnedCompletionData> completions)
+        {
             var directory = Path.GetDirectoryName(LearningStoragePath);
             if (!Directory.Exists(directory))
             {
@@ -75,12 +79,12 @@ namespace PSSharp
             }
             var serializer = new XmlSerializer(typeof(List<LearnedCompletionData>));
             using var fs = new FileStream(LearningStoragePath, FileMode.OpenOrCreate, FileAccess.Write);
-            serializer.Serialize(fs, currentData);
+            serializer.Serialize(fs, completions);
         }
         [XmlAttribute]
-        public string Command { get; set; }
+        public string CommandName { get; set; }
         [XmlAttribute]
-        public string Parameter { get; set; }
+        public string ParameterName { get; set; }
         [XmlArrayItem]
         public List<string> Completions { get; private set; } = new List<string>();
     }
