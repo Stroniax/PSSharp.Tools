@@ -29,4 +29,3 @@ Import-Module (Join-Path $TargetDirectory -ChildPath "$ModuleName\$ModuleName.ps
 
 New-PSDrive -Name "Project" -PSProvider FileSystem -Root $TargetDirectory -Scope Global | Out-Null
 Set-Location "Project:"
-

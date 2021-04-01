@@ -42,7 +42,10 @@ namespace PSSharp
 
         protected static CompletionResult CreateCompletionResult(string value, bool escapeVariables = true)
         {
-            if (value.Contains("'") || value.Contains(" ") || (escapeVariables && value.Contains("$")))
+            if (value.Contains("'") 
+                || value.Contains(" ") 
+                || value.Contains(";")
+                || (escapeVariables && value.Contains("$")))
             {
                 var val = CodeGeneration.EscapeSingleQuotedStringContent(value);
                 if (escapeVariables) val = CodeGeneration.EscapeVariableName(val);
