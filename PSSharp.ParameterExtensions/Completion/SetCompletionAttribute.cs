@@ -8,18 +8,32 @@ using System.Text;
 
 namespace PSSharp
 {
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-    public class SetCompletionAttribute : ArgumentCompleterAttribute
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    public class SetCompletionAttribute : CompletionBaseAttribute
     {
         public SetCompletionAttribute(params string[] set)
-            : base(GetScript(set))
+            : base(() => new Completer(set))
         {
         }
-        private static ScriptBlock GetScript(string[] set)
+        private class Completer : IArgumentCompleter
         {
-            var escapedSet = set.Select(i => "'" + CodeGeneration.EscapeSingleQuotedStringContent(i) + "'");
-            var scriptText = string.Format(Resources.SetCompletion, string.Join(", ", escapedSet));
-            return ScriptBlock.Create(scriptText);
+            private string[] _set;
+            public Completer(string[] set)
+            {
+                _set = set;
+            }
+            
+            public IEnumerable<CompletionResult> CompleteArgument(string commandName, string parameterName, string wordToComplete, CommandAst commandAst, System.Collections.IDictionary fakeBoundParameters)
+            {
+                var wc = WildcardPattern.Get(wordToComplete + "*", WildcardOptions.IgnoreCase);
+                foreach (var item in _set)
+                {
+                    if (wc.IsMatch(item))
+                    {
+                        yield return CreateCompletionResult(item);
+                    }
+                }
+            }
         }
     }
 }
