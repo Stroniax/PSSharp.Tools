@@ -38,6 +38,7 @@ namespace PSSharp.Commands
         /// </summary>
         [Parameter(Mandatory = true, Position = 0, ValueFromPipelineByPropertyName = true, ParameterSetName = "AddressSubnetMask")]
         [Parameter(Mandatory = true, Position = 0, ValueFromPipelineByPropertyName = true, ParameterSetName = "AddressCIDR")]
+        [IPv4AddressCompletion]
         public IPAddress NetworkAddress { get; set; } = null!;
         /// <summary>
         /// <para type="description">The CIDR value of the subnet; for example, the '24' in '192.168.150.0/24'. 
@@ -47,11 +48,13 @@ namespace PSSharp.Commands
         /// </summary>
         [Parameter(Mandatory = true, Position = 1, ValueFromPipelineByPropertyName = true, ParameterSetName = "AddressCIDR")]
         [ValidateRange(0, MaxCidrValue)]
+        [NumericCompletion(0, MaxCidrValue)]
         public int CIDR { get; set; }
         /// <summary>
         /// <para type="description">The mask of the subnet, such as '255.255.255.0'.</para>
         /// </summary>
         [Parameter(Mandatory = true, Position = 1, ValueFromPipelineByPropertyName = true, ParameterSetName = "AddressSubnetMask")]
+        [IPv4AddressCompletion]
         public IPAddress SubnetMask { get; set; } = null!;
         /// <summary>
         /// <para type="description">The network address and CIDR separated by a forward slash: for example, '192.168.150.0/24'. 
@@ -59,6 +62,7 @@ namespace PSSharp.Commands
         /// </summary>
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "DefaultParameterSet", ValueFromPipeline = true,
             HelpMessage = "Provide the IP address and CIDR mask separated by a forward slash (ex: '192.168.150.0/24').")]
+        [IPv4AddressCompletion]
         public string CidrNotation { get; set; } = null!;
         /// <inheritdoc/>
         protected override void ProcessRecord()

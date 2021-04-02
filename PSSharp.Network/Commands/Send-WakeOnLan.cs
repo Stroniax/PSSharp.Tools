@@ -18,6 +18,8 @@ namespace PSSharp.Commands
         /// <para type='description'>The mac address(es) to which the WakeOnLan command will be sent.</para>
         /// </summary>
         [Parameter(ValueFromPipelineByPropertyName = true, Mandatory = true, Position = 0)]
+        [CompletionLearner("Send-WakeOnLan", "MacAddress")]
+        [LearnedCompletion("Send-WakeOnLan", "MacAddress")]
         public string[] MacAddress { get; set; } = null!;
 
         /// <summary>
@@ -33,6 +35,7 @@ namespace PSSharp.Commands
         /// </summary>
         [Parameter]
         [ValidateRange(1, ushort.MaxValue)]
+        [NumericCompletion(1, ushort.MaxValue)]
         public ushort Port { get; set; } = WakeOnLan.DefaultPort;
 
         /// <inheritdoc/>

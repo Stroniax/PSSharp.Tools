@@ -49,16 +49,20 @@ namespace PSSharp.Commands
         /// The name of the job created from the task(s) provided.
         /// </summary>
         [Parameter]
+        [LearnedCompletion("ConvertTo-TaskJob", "Name")]
+        [CompletionLearner("ConvertTo-TaskJob", "Name")]
         public string? Name { get; set; }
         /// <summary>
         /// <para type='description'>The task(s) wrapped into the job that is output.</para>
         /// </summary>
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
+        [NoCompletion]
         public Task[] Task { get; set; } = new Task[0];
         /// <summary>
         /// <para type='description'>The cancellation token source that can be used to stop the task(s) (and job[s]) created.</para>
         /// </summary>
         [Parameter]
+        [NoCompletion]
         public CancellationTokenSource? CancellationTokenSource { get; set; }
         protected override void ProcessRecord()
         {

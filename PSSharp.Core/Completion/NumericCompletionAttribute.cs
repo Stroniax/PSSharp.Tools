@@ -13,9 +13,20 @@ namespace PSSharp
             : base (() => new Completer(int.MinValue, int.MaxValue, 1))
         {
         }
-        public NumericCompletionAttribute(decimal min, decimal max)
+        public NumericCompletionAttribute(int min, int max)
             : base(() => new Completer(min, max, 1))
         {
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="min">Must be convertible to decimal.</param>
+        /// <param name="max">Must be convertible to decimal.</param>
+        public NumericCompletionAttribute(object min, object max)
+            : base(() => new Completer(Convert.ToDecimal(min), Convert.ToDecimal(max), 1))
+        {
+
         }
         public NumericCompletionAttribute(decimal min, decimal max, decimal increment)
             : base (() => new Completer(min, max, increment))

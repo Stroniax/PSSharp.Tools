@@ -47,6 +47,7 @@ namespace PSSharp.Commands
         /// <para type='description'>For more information about PowerShell background jobs, see about_Jobs and about_Remote_Jobs.</para>
         /// </summary>
         [Parameter]
+        [NoCompletion]
         public SwitchParameter AsJob { get; set; }
         #endregion
         #region Protected Members

@@ -41,6 +41,7 @@ namespace PSSharp.Commands
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
         [ValidateNotNullOrEmpty]
         [Alias("Address", "Value", "IPAddress")]
+        [IPv4AddressCompletion]
         public IPAddress[] InputObject { get; set; } = new IPAddress[0];
         /// <inheritdoc/>
         protected override void ProcessRecord()

@@ -50,8 +50,9 @@ namespace PSSharp.Commands
         /// </summary>
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
         [ValidateNotNullOrEmpty]
-        [ValidateRange(0, 4294967295)]
+        [ValidateRange(0, uint.MaxValue)]
         [Alias("Address", "Value", "IPAddress")]
+        [NumericCompletion(0, uint.MaxValue)]
         public long[] InputObject { get; set; } = new long[0];
         /// <inheritdoc/>
         protected override void ProcessRecord()

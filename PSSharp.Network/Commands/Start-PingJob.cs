@@ -47,12 +47,16 @@ namespace PSSharp.Commands
         /// </summary>
         [Parameter(Mandatory = true, Position = 0, ValueFromPipelineByPropertyName = true)]
         [Alias("IPAddress","cn")]
+        [LearnedCompletion("Start-PingJob", "ComputerName")]
+        [CompletionLearner("Start-PingJob", "ComputerName")]
         public string[] ComputerName { get; set; } = null!;
 
         /// <summary>
         /// <para type='description'>The name of the job.</para>
         /// </summary>
-        [Parameter()]
+        [Parameter]
+        [LearnedCompletion("Start-PingJob", "Name")]
+        [CompletionLearner("Start-PingJob", "Name")]
         public string? Name { get; set; }
 
         /// <inheritdoc/>
