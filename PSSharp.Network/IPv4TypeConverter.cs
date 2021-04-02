@@ -9,6 +9,7 @@ namespace PSSharp
     /// <summary>
     /// <para type="description">Converts IPv4 addresses to their <see cref="double"/> or <see cref="long"/> values, and vice versa.</para>
     /// </summary>
+    [PSTypeConverter(typesToConvert: typeof(IPAddress))]
     public class IPv4TypeConverter : PSTypeConverter
     {
         #region PSTypeConverter

@@ -32,6 +32,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\PSSharp.Core\PSSharp.Core.csproj" />
+	  <ProjectReference Include="..\PSSharp.TypeDataDefinitions\PSSharp.TypeDataDefinitions.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

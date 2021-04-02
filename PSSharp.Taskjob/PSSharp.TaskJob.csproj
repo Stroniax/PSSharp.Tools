@@ -17,6 +17,7 @@
 		<ProjectReference Include="..\PSSharp.Core\PSSharp.Core.csproj" />
 		<ProjectReference Include="..\PSSharp.JobExtensions\PSSharp.JobExtensions.csproj" />
 		<ProjectReference Include="..\PSSharp.AsyncExtensions\PSSharp.AsyncExtensions.csproj" />
+		<ProjectReference Include="..\PSSharp.TypeDataDefinitions\PSSharp.TypeDataDefinitions.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -11,4 +11,8 @@
 	  <DocumentationFile>PSSharp.HashtableConstructor.xml</DocumentationFile>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\PSSharp.TypeDataDefinitions\PSSharp.TypeDataDefinitions.csproj" />
+	</ItemGroup>
+
 </Project>
