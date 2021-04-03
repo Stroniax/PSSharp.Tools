@@ -26,6 +26,7 @@ namespace PSSharp
             parameters["TypeName"] = AppliesToTypeName;
             if (attributeAppliedTo is MethodInfo method)
             {
+                parameters["MemberName"] ??= method.Name;
                 if (!method.IsStatic) return;
                 var methodParameters = method.GetParameters();
                 if (methodParameters.Length == 0) return;

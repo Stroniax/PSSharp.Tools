@@ -4,5 +4,12 @@
         <name>PSSharp.HashtableConstructor</name>
     </assembly>
     <members>
+        <member name="M:PSSharp.HashtableConverter.MergeWith(System.Collections.Hashtable,System.Management.Automation.PSObject,System.Boolean)">
+            <exception cref="T:PSSharp.HashtableMergeTypeException">The type of an object in <paramref name="hashtable"/>
+            does not match the type of the property of <see cref="!:data"/>.</exception>
+            <exception cref="T:System.Management.Automation.PropertyNotFoundException"><paramref name="otherAsNoteProperties"/> 
+            is <see langword="false"/> and a key exists in the <paramref name="hashtable"/> that 
+            does not correspond to a property of <paramref name="data"/>.</exception>
+        </member>
     </members>
 </doc>

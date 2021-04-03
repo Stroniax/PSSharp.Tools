@@ -1079,7 +1079,7 @@ function Import-TypeDataDefinitions {
 
 			# To be as descriptive as possible, I'll report all errors identified for a given type at once
 			# so that they can *all* be fixed before the developer tries again.
-			$Params.Keys | Where-Object { $null -eq $Params[$_] } | ForEach-Object { $Params.Remove($_) } | Out-Null
+			$Params.Keys | Where-Object { $null -eq $Params[$_] } | Sort-Object | ForEach-Object { $Params.Remove($_) } | Out-Null
 			[System.Boolean]$IsErrorState = $false
 			if ([System.String]::IsNullOrWhiteSpace($Params['TypeName'])) {
 				# Update-TypeData requires the TypeName parameter.
