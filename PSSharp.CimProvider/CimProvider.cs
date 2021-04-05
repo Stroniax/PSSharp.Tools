@@ -185,11 +185,18 @@ namespace PSSharp.Providers
         #region ItemCmdletProvider
         private void SplitPath(string path, out string cimNamespace, out string? cimClass)
         {
-            var pathParts = path.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
-            cimClass = pathParts[pathParts.Length - 1];
-            if (!cimClass.Contains("_")) cimClass = null;
+            var pathParts = path.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries);
             cimNamespace = "\\" + string.Join("\\", pathParts);
-            if (cimClass != null) cimNamespace = cimNamespace.Replace(cimClass ?? string.Empty, "");
+
+            if (!PSDriveInfo.Namespaces.ContainsKey(cimNamespace))
+            {
+                cimClass = pathParts[pathParts.Length - 1];
+                cimNamespace = cimNamespace.Replace(cimClass, "");
+            }
+            else
+            {
+                cimClass = null;
+            }
             WriteDebug($"Split path '{path}' to namespace '{cimNamespace}' and class '{cimClass ?? "(null)"}'.");
         }
         private void RefreshCancellationTokenSource()
@@ -199,14 +206,14 @@ namespace PSSharp.Providers
         }
         protected override bool IsValidPath(string path)
         {
-            WriteDebug($"IsValidPath: '{path}'");
+            WriteDebug($"IsValidPath: '{path ?? "(null)"}'");
             return System.Text.RegularExpressions.Regex.IsMatch(path, @"^(\w|\\|_)*$");
         }
         protected override void ClearItem(string path) => base.ClearItem(path);
         protected override object ClearItemDynamicParameters(string path) => base.ClearItemDynamicParameters(path);
         protected override string[] ExpandPath(string path)
         {
-            Console.WriteLine($"Expanding path '{path}'");
+            Console.WriteLine($"ExpandPath: '{path ?? "(null)"}'");
             var wc = new WildcardPattern(path, WildcardOptions.IgnoreCase);
             var output = new List<string>();
             foreach (var key in PSDriveInfo.Namespaces.Keys)
@@ -214,9 +221,10 @@ namespace PSSharp.Providers
                 if (wc.IsMatch(key)) output.Add(key);
                 foreach (var value in PSDriveInfo.Namespaces[key])
                 {
-                    if (wc.IsMatch(value)) output.Add(value);
+                    if (wc.IsMatch(value)) output.Add($"{key}/{value}");
                 }
             }
+            Console.WriteLine("ExpandPath: {0} matches found", output.Count);
             return output.ToArray();
         }
         protected override void GetItem(string path) => base.GetItem(path);
