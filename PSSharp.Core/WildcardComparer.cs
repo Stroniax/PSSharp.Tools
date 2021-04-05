@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Management.Automation;
 using System.Text;
 
-namespace Stroniax.PowerShell
+namespace PSSharp
 {
     /// <summary>
-    /// A <see cref="IEqualityComparer{T}"/> to compare string values that may or may not contain wildcards.
+    /// An implementation of <see cref="IEqualityComparer{T}"/> to compare string values that may or may not contain wildcards.
     /// </summary>
     public sealed class WildcardComparer : IEqualityComparer<string>
     {
