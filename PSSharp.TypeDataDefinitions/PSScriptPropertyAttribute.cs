@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace PSSharp
 {
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true, Inherited = false)]
     public class PSScriptPropertyAttribute : PSTypeDataAttribute
     {
         public PSScriptPropertyAttribute(string propertyName, string? getScript)

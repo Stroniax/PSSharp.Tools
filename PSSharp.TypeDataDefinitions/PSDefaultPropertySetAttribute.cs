@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace PSSharp
 {
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
     public class PSDefaultPropertySetAttribute : PSTypeDataAttribute
     {
         public PSDefaultPropertySetAttribute(params string[] properties)
