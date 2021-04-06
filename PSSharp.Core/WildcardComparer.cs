@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Management.Automation;
 using System.Text;
@@ -8,7 +9,7 @@ namespace PSSharp
     /// <summary>
     /// An implementation of <see cref="IEqualityComparer{T}"/> to compare string values that may or may not contain wildcards.
     /// </summary>
-    public sealed class WildcardComparer : IEqualityComparer<string>
+    public sealed class WildcardComparer : IEqualityComparer<string>, IEqualityComparer
     {
         /// <summary>
         /// Gets a <see cref="WildcardComparer"/> that compares using the given <paramref name="options"/>.
@@ -68,5 +69,11 @@ namespace PSSharp
         /// </summary>
         public int GetHashCode(string obj)
             => obj.GetHashCode();
+
+        public new bool Equals(object x, object y)
+            => Equals(LanguagePrimitives.ConvertTo<string>(x), LanguagePrimitives.ConvertTo<string>(y));
+
+        public int GetHashCode(object obj)
+            => GetHashCode(LanguagePrimitives.ConvertTo<string>(obj));
     }
 }

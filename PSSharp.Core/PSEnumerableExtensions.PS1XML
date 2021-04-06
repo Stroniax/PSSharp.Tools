@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Types>
+	<Type>
+		<Name>System.Array</Name>
+		<Members>
+			<ScriptMethod>
+				<Name>Any</Name>
+				<Script>
+					[CmdletBinding(DefaultParameterSetName='ScriptExpression')]
+					[OutputType([bool])]
+					param(
+					[Parameter(Mandatory, ParameterSetName='ScriptExpression')]
+					[ScriptBlock]$ScriptBlock,
+					[Parameter(Mandatory, ParameterSetName="PredicateFuncT")]
+					[System.Func[object, bool]]$Delegate
+					)
+					$ErrorActionPreference = 'Stop'
+					Set-StrictMode -Version 2
+					foreach ($item in $this) {
+					if ($null -ne $ScriptBlock) {
+					$variables = [System.Collections.Generic.List[psvariable]]::new()
+					$variables.Add([psvariable]::new('_',$item))
+					if ($ScriptBlock.InvokeWithContext($null, $variables, $item))
+					{
+					return $true
+					}
+					}
+					else {
+					if ($Delegate.Invoke($this)) {
+					return $true
+					}
+					}
+					}
+					return $false
+				</Script>
+			</ScriptMethod> <!--Any-->
+			<ScriptMethod>
+				<Name>Contains</Name>
+				<Script>
+					param(
+					[Parameter(Mandatory)]
+					[object]$Value,
+					[Parameter()]
+					[System.Collections.IEqualityComparer]$Comparer
+					)
+					$ErrorActionPreference = 'Stop'
+					Set-StrictMode -Version 2
+					foreach ($item in $this) {
+						if ($null -ne $Comparer) {
+							if ($Comparer.Equals($Item, $Value)) {
+								return $true
+							}
+						}
+						else {
+							if ($Item -eq $Value) {
+								return $true
+							}
+						}
+					}
+					return $false
+				</Script>
+			</ScriptMethod> <!--Contains-->
+			<ScriptMethod>
+				<Name>Where</Name>
+				<Script>
+					
+				</Script>
+			</ScriptMethod>
+			<ScriptMethod>
+				<Name>Select</Name>
+				<Script>
+					[CmdletBinding(DefaultParameterSetName='ScriptExpression')]
+					param(
+					[Parameter(Mandatory, ParameterSetName="PropertyName")]
+					[String]$PropertyName,
+					[Parameter(Mandatory, ParameterSetName="ScriptExpression")]
+					[ScriptBlock]$ScriptBlock
+					)
+				</Script>
+			</ScriptMethod>
+		</Members>
+	</Type>
+</Types>
