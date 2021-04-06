@@ -30,6 +30,22 @@ namespace PSSharp
                 observer.AddCancellation(disposeSource, cancellationToken);
                 return observer;
             }
+            /// <summary>
+            /// Wraps the output of a <see cref="IObserver{T}"/> by creating a new <see cref="IObserver{T}"/>
+            /// with a translation function between <typeparamref name="TSource"/> and 
+            /// <typeparamref name="TResult"/>.
+            /// </summary>
+            /// <typeparam name="TSource">The result output by the initial <see cref="IObserver{T}"/></typeparam>
+            /// <typeparam name="TResult">The result output from the new <see cref="IObservable{T}"/>, as defined
+            /// by <paramref name="onNext"/>.</typeparam>
+            /// <param name="source">The source <see cref="IObservable{T}"/> to be wrapped by <paramref name="onNext"/>.</param>
+            /// <param name="onNext">Translates a <typeparamref name="TSource"/> instance
+            /// to a <typeparamref name="TResult"/> instance for the wrapping 
+            /// <see cref="IObservable{T}"/>.</param>
+            /// <returns></returns>
+            public static IObservable<TResult> WrapOutput<TSource, TResult>(this IObservable<TSource> source, Func<TSource, TResult> onNext)
+                => new ObserverWrapper<TSource, TResult>(source ?? throw new ArgumentNullException(nameof(source)),
+                                                         onNext ?? throw new ArgumentNullException(nameof(onNext)));
         }
     }
 }
