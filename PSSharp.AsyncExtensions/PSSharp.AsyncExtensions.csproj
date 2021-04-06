@@ -7,6 +7,7 @@
 		<Nullable>enable</Nullable>
 		<Version>0.1.1</Version>
 		<Description>Extensions and interfaces for async/await.</Description>
+		<Authors>Caleb Frederickson</Authors>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -12,6 +12,7 @@
 	  <PowerShellPath>%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe</PowerShellPath>
 	  <Description>PowerShell Extended Type Data declarations within source code using attributes.</Description>
 	  <Version>0.1.1</Version>
+	  <Authors>Caleb Frederickson</Authors>
   </PropertyGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">

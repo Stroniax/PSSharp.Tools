@@ -8,6 +8,7 @@
 		<PSModuleName>PSSharp.TaskJob</PSModuleName>
 		<Version>0.1.0</Version>
 		<Description>TaskJob converts a Task or Task&lt;T&gt; instance into a PowerShell job. An AsyncPSCmdlet base class enables using the job to execute asynchronous code within the process block of a cmdlet that can optionally be invoked as a job (via the -AsJob parameter).</Description>
+		<Authors>Caleb Frederickson</Authors>
 	</PropertyGroup>
 
 	<ItemGroup>

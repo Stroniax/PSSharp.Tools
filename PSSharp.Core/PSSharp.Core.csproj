@@ -13,6 +13,8 @@
 		<Version>0.1.6</Version>
 		<RepositoryUrl></RepositoryUrl>
 		<Description>Common PowerShell helper utilities. Parameter completion, validation, transformation, wildcard expansion, and the PowerShell ObserverJob&lt;T&gt;.</Description>
+		<Company>Caleb Frederickson</Company>
+		<Authors>Caleb Frederickson</Authors>
 	</PropertyGroup>
 
 	<ItemGroup>
