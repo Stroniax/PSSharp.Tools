@@ -10,6 +10,8 @@
 		<PSPrebuildScript Condition="'$(PrebuildScript)'==''">$(ProjectDir)Prebuild.ps1</PSPrebuildScript>
 		<PSPostbuildScript Condition="'$(PostbuildScript)'==''">$(ProjectDir)Postbuild.ps1</PSPostbuildScript>
 		<PowerShellPath>%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe</PowerShellPath>
+		<Version>0.1.6</Version>
+		<RepositoryUrl></RepositoryUrl>
 	</PropertyGroup>
 
 	<ItemGroup>

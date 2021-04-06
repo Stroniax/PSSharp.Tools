@@ -3,8 +3,8 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<ApplicationIcon>PowerShellIcon.ico</ApplicationIcon>
-		<AssemblyName>PSSharp.CimProvider</AssemblyName>
-		<RootNamespace>PSSharp.CimProvider</RootNamespace>
+		<AssemblyName>PSSharp.Providers.Cim</AssemblyName>
+		<RootNamespace>PSSharp.Providers</RootNamespace>
 		<LangVersion>8.0</LangVersion>
 		<Nullable>enable</Nullable>
 		<DebugScript Condition="'$(DebugScript)'==''">$(ProjectDir)Debug.ps1</DebugScript>
