@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-namespace PSSharp.AsyncExtensions
+namespace PSSharp
 {
     /// <summary>
     /// Contract for an awaiter that waits for an operation to complete.

@@ -1,4 +1,4 @@
-﻿namespace PSSharp.AsyncExtensions
+﻿namespace PSSharp
 {
     /// <summary>
     /// Exposes an awaiter, which can be used to asynchronously wait for an operation to complete.
