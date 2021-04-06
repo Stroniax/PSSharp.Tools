@@ -11,8 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PSSharp.TaskJob", "PSSharp.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PSSharp.HashtableConstructor", "PSSharp.HashtableConstructor\PSSharp.HashtableConstructor.csproj", "{B978DEA3-3DAA-4808-B5F3-97A40B21696B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PSSharp.JobExtensions", "PSSharp.JobExtensions\PSSharp.JobExtensions.csproj", "{AE5427D2-0C04-43A1-87BA-1329687A1C7C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PSSharp.Network", "PSSharp.Network\PSSharp.Network.csproj", "{6498D940-539D-4D17-BE2D-2B66B74547B7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PSSharp.PSPrintJob", "PSSharp.PSPrintJob\PSSharp.PSPrintJob.csproj", "{17F57BAF-5F0C-43F6-9B86-907F69C9206D}"
@@ -47,10 +45,6 @@ Global
 		{B978DEA3-3DAA-4808-B5F3-97A40B21696B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B978DEA3-3DAA-4808-B5F3-97A40B21696B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B978DEA3-3DAA-4808-B5F3-97A40B21696B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AE5427D2-0C04-43A1-87BA-1329687A1C7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AE5427D2-0C04-43A1-87BA-1329687A1C7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AE5427D2-0C04-43A1-87BA-1329687A1C7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AE5427D2-0C04-43A1-87BA-1329687A1C7C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6498D940-539D-4D17-BE2D-2B66B74547B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6498D940-539D-4D17-BE2D-2B66B74547B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6498D940-539D-4D17-BE2D-2B66B74547B7}.Release|Any CPU.ActiveCfg = Release|Any CPU

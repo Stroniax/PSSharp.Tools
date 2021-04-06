@@ -6,6 +6,8 @@
 		<Nullable>enable</Nullable>
 		<RootNamespace>PSSharp</RootNamespace>
 		<PSModuleName>PSSharp.TaskJob</PSModuleName>
+		<Version>0.1.0</Version>
+		<Description>TaskJob converts a Task or Task&lt;T&gt; instance into a PowerShell job. An AsyncPSCmdlet base class enables using the job to execute asynchronous code within the process block of a cmdlet that can optionally be invoked as a job (via the -AsJob parameter).</Description>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -15,7 +17,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\PSSharp.Core\PSSharp.Core.csproj" />
-		<ProjectReference Include="..\PSSharp.JobExtensions\PSSharp.JobExtensions.csproj" />
 		<ProjectReference Include="..\PSSharp.AsyncExtensions\PSSharp.AsyncExtensions.csproj" />
 		<ProjectReference Include="..\PSSharp.TypeDataDefinitions\PSSharp.TypeDataDefinitions.csproj" />
 	</ItemGroup>

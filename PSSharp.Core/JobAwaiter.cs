@@ -8,7 +8,7 @@ using System.Text;
 namespace PSSharp
 {
     /// <summary>
-    /// An awaiter used to <see langword="await"/> a PowerShell <see cref="Job"/>.
+    /// Used to <see langword="await"/> a PowerShell <see cref="Job"/>.
     /// </summary>
     public struct JobAwaiter : IAwaiter
     {

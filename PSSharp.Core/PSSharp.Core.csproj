@@ -12,6 +12,7 @@
 		<PowerShellPath>%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe</PowerShellPath>
 		<Version>0.1.6</Version>
 		<RepositoryUrl></RepositoryUrl>
+		<Description>Common PowerShell helper utilities. Parameter completion, validation, transformation, wildcard expansion, and the PowerShell ObserverJob&lt;T&gt;.</Description>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -20,7 +21,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\PSSharp.AsyncExtensions\PSSharp.AsyncExtensions.csproj" />
-	  <ProjectReference Include="..\PSSharp.JobExtensions\PSSharp.JobExtensions.csproj" />
 	  <ProjectReference Include="..\PSSharp.TypeDataDefinitions\PSSharp.TypeDataDefinitions.csproj" />
 	</ItemGroup>
 
