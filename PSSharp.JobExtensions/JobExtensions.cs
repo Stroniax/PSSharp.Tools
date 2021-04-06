@@ -30,5 +30,13 @@ namespace PSSharp.Extensions
                  : job.JobStateInfo.State == JobState.Completed
                 || job.JobStateInfo.State == JobState.Failed
                 || job.JobStateInfo.State == JobState.Stopped;
+        public static bool AnyStreamHasData(this Job job)
+            => job.Output.Count > 0
+            || job.Error.Count > 0
+            || job.Warning.Count > 0
+            || job.Verbose.Count > 0
+            || job.Debug.Count > 0
+            || job.Information.Count > 0
+            || job.Progress.Count > 0;
     }
 }

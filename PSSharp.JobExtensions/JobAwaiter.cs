@@ -10,7 +10,7 @@ namespace PSSharp
     /// <summary>
     /// An awaiter used to <see langword="await"/> a PowerShell <see cref="Job"/>.
     /// </summary>
-    public struct JobAwaiter : INotifyCompletion
+    public struct JobAwaiter : IAwaiter
     {
         /// <summary>
         /// Indicates if this <see cref="Job"/> has completed.
