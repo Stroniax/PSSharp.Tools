@@ -5,6 +5,8 @@
 		<RootNamespace>PSSharp.AsyncExtensions</RootNamespace>
 		<LangVersion>8.0</LangVersion>
 		<Nullable>enable</Nullable>
+		<Version>0.1.1</Version>
+		<Description>Extensions and interfaces for async/await.</Description>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -10,6 +10,8 @@
 	  <PSPrebuildScript Condition="'$(PrebuildScript)'==''">$(ProjectDir)Prebuild.ps1</PSPrebuildScript>
 	  <PSPostbuildScript Condition="'$(PostbuildScript)'==''">$(ProjectDir)Postbuild.ps1</PSPostbuildScript>
 	  <PowerShellPath>%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe</PowerShellPath>
+	  <Description>PowerShell Extended Type Data declarations within source code using attributes.</Description>
+	  <Version>0.1.1</Version>
   </PropertyGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
