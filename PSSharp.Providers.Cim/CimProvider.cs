@@ -248,7 +248,7 @@ namespace PSSharp.Providers
             }
             else
             {
-                SplitPath(path, out string cimNamespace, out string cimClass);
+                SplitPath(path, out string cimNamespace, out string? cimClass);
                 using var options = new CimOperationOptions()
                 {
                     CancellationToken = _cts?.Token,

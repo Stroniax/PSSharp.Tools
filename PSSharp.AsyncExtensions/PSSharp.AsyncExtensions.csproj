@@ -14,4 +14,14 @@
 		<DocumentationFile>PSSharp.AsyncExtensions.xml</DocumentationFile>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
+	  <PackageReference Include="System.Linq.Async" Version="5.0.0" />
+	  <PackageReference Include="System.Reactive" Version="5.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Extensions\" />
+	</ItemGroup>
+
 </Project>

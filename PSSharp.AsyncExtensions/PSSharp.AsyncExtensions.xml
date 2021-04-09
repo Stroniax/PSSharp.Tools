@@ -4,23 +4,6 @@
         <name>PSSharp.AsyncExtensions</name>
     </assembly>
     <members>
-        <member name="T:PSSharp.Extensions.IObservableExtensions">
-            <summary>
-            Extension methods for <see cref="T:System.IObservable`1"/>.
-            </summary>
-        </member>
-        <member name="M:PSSharp.Extensions.IObservableExtensions.Subscribe``1(System.IObservable{``0},System.Action{``0},System.Threading.CancellationToken)">
-            <summary>
-            Subscribes an <paramref name="action"/> to be executed on each item provided by the 
-            <see cref="T:System.IObservable`1"/> <paramref name="source"/>. The <see langword="await"/>
-            keyword can be used on the <see cref="T:PSSharp.IAwaitableObserver`1"/> returned.
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="source">The item provider.</param>
-            <param name="action">The action invoked by the subscriber.</param>
-            <param name="cancellationToken">A cancellation token used to halt the returned <see cref="T:PSSharp.IAwaitableObserver`1"/>.</param>
-            <returns></returns>
-        </member>
         <member name="T:PSSharp.IAwaitable">
             <summary>
             Exposes an awaiter, which can be used to asynchronously wait for an operation to complete.
@@ -44,30 +27,6 @@
             Returns an awaiter that can be used to wait for the operation to complete and retrieve the result.
             </summary>
             <returns>An awaiter that can be used to wait for the operation to complete.</returns>
-        </member>
-        <member name="T:PSSharp.IAwaitableObserver`1">
-            <summary>
-            <see cref="T:System.IObserver`1"/> implementation that can be awaited for <see cref="M:System.IObserver`1.OnCompleted"/>.
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="M:PSSharp.AwaitableActionObserver`1.GetAwaiter">
-            <inheritdoc/>
-        </member>
-        <member name="M:PSSharp.AwaitableActionObserver`1.OnCompleted">
-            <inheritdoc/>
-        </member>
-        <member name="M:PSSharp.AwaitableActionObserver`1.OnError(System.Exception)">
-            <inheritdoc/>
-        </member>
-        <member name="M:PSSharp.AwaitableActionObserver`1.OnNext(`0)">
-            <inheritdoc/>
-        </member>
-        <member name="M:PSSharp.AwaitableActionObserver`1.#ctor(System.Action{`0})">
-            <summary>
-            Default constructor.
-            </summary>
-            <param name="action">The action to be invoked on each observed item.</param>
         </member>
         <member name="T:PSSharp.IAwaiter">
             <summary>
