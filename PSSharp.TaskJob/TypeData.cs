@@ -10,4 +10,11 @@ using System.Threading.Tasks;
     + "return $null"
     + "}"
     + "")]
-[assembly: ExternalPSDefaultPropertySet(typeof(Task), nameof(Task.Id), nameof(Task.Status), nameof(Task.IsCompleted), nameof(Task.IsCanceled), nameof(Task.IsFaulted), nameof(Task<object>.Result))]
+[assembly: ExternalPSDefaultPropertySet(typeof(Task),
+                                        nameof(Task.Id),
+                                        nameof(Task.Status),
+                                        nameof(Task.IsCompleted),
+                                        nameof(Task.IsCanceled),
+                                        nameof(Task.IsFaulted),
+                                        nameof(Task<object>.Result)
+                                        )]

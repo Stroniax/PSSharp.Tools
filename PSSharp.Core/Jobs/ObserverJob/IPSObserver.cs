@@ -17,8 +17,12 @@ namespace PSSharp
         /// Notifies the observer that the provider has experienced an error condition.
         /// </summary>
         /// <param name="error">An object that provides additional information about the error.</param>
-        /// <param name="isTerminatingError">True if the <see cref="IPSObservable{T}"/> cannot continue due to this error.</param>
-        void OnError(ErrorRecord error, bool isTerminatingError = false);
+        void OnError(ErrorRecord error);
+        /// <summary>
+        /// Notifies the observer that the provider has encountered an unrecoverable error condition.
+        /// </summary>
+        /// <param name="error">An object that provides additional information about the error.</param>
+        void OnFailed(ErrorRecord error);
         /// <summary>
         /// Provides the observer with a warning message.
         /// </summary>
