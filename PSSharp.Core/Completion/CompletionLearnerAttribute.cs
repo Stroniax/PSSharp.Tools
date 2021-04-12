@@ -53,11 +53,13 @@ namespace PSSharp
             {
                 foreach (var arg in manyArgs)
                 {
+                    if (arg is null) continue;
                     LearnedCompletionData.LearnCompletion(Command, Parameter, arg.ToString());
                 }
             }
             else
             {
+                if (arguments is null) return;
                 LearnedCompletionData.LearnCompletion(Command, Parameter, arguments.ToString());
             }
         }
