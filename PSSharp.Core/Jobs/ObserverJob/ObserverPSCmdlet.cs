@@ -204,7 +204,7 @@ WriteDebug($"EndProcessing() : Writing observer contents until complete.");
                 {
                     foreach (var observer in _observers)
                     {
-                        observer.OnNext(observable);
+                        observer.OnNext(observable!);
                     }
                 }
             }

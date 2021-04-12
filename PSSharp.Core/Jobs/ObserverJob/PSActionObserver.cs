@@ -7,16 +7,18 @@ namespace PSSharp
     {
         private Action<PSActionObserver<T>, T>? _onOutput;
         private Action<PSActionObserver<T>>? _onCompleted;
+        private Action<PSActionObserver<T>, ErrorRecord>? _onFailed;
         private Action<PSActionObserver<T>, string>? _onDebug;
         private Action<PSActionObserver<T>, string>? _onWarning;
         private Action<PSActionObserver<T>, string>? _onVerbose;
-        private Action<PSActionObserver<T>, ErrorRecord, bool>? _onError;
+        private Action<PSActionObserver<T>, ErrorRecord>? _onError;
         private Action<PSActionObserver<T>, InformationRecord>? _onInformation;
         private Action<PSActionObserver<T>, ProgressRecord>? _onProgress;
 
         public void OnCompleted() => _onCompleted?.Invoke(this);
+        public void OnFailed(ErrorRecord error) => _onFailed?.Invoke(this, error);
         public void OnDebug(string debug) => _onDebug?.Invoke(this, debug);
-        public void OnError(ErrorRecord error, bool isTerminatingError = false) => _onError?.Invoke(this, error, isTerminatingError);
+        public void OnError(ErrorRecord error) => _onError?.Invoke(this, error);
         public void OnInformation(InformationRecord information) => _onInformation?.Invoke(this, information);
         public void OnOutput(T output) => _onOutput?.Invoke(this, output);
         public void OnProgress(ProgressRecord progress) => _onProgress?.Invoke(this, progress);

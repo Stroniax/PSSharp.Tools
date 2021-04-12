@@ -66,6 +66,7 @@ namespace PSSharp.Commands
             {
                 var job = new PingJob(MyInvocation.Line, Name, cn);
                 JobRepository.Add(job);
+                job.StartJob();
                 WriteObject(job);
             }
         }

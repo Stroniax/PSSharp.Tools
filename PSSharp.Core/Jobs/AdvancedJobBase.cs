@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Management.Automation;
+using System.Threading.Tasks;
 
 namespace PSSharp
 {
@@ -11,6 +13,9 @@ namespace PSSharp
     /// </summary>
     public abstract class AdvancedJobBase : Job2, IPSObservable<PSObject>, IObservable<PSObject>
     {
+        #region Events
+        public event EventHandler? Disposed;
+        #endregion
         #region IObservable<> & IPSObservable<> implementation
         /// <summary>
         /// Used to lock when executing observer actions.
@@ -383,45 +388,7 @@ namespace PSSharp
             }
         }
         #endregion
-        #region Constructor
-        /// <inheritdoc/>
-        protected AdvancedJobBase()
-            : base()
-        {
-            ConfigureObservation();
-        }
-        /// <inheritdoc/>
-        protected AdvancedJobBase(string? command)
-            : base(command)
-        {
-            ConfigureObservation();
-        }
-        /// <inheritdoc/>
-        protected AdvancedJobBase(string? command, string? name)
-            : base(command, name)
-        {
-            ConfigureObservation();
-        }
-        /// <inheritdoc/>
-        protected AdvancedJobBase(string? command, string? name, Guid instanceId)
-            : base(command, name, instanceId)
-        {
-            ConfigureObservation();
-        }
-        /// <inheritdoc/>
-        protected AdvancedJobBase(string? command, string? name, JobIdentifier token)
-            : base(command, name, token)
-        {
-            ConfigureObservation();
-        }
-        /// <inheritdoc/>
-        protected AdvancedJobBase(string? command, string? name, IList<Job> childJobs)
-            : base(command, name, childJobs)
-        {
-            ConfigureObservation();
-        }
-        #endregion
-
+        #region Job Overrides
         /// <inheritdoc cref="PrimitiveJobBase.HasMoreData"/>
         [PSDefaultValue(Help = "Indicates whether or not the job has data (output, error, etc.) that has not been cleared.")]
         public override bool HasMoreData
@@ -477,7 +444,12 @@ namespace PSSharp
                 }
             }
         }
-
+        /// <summary>
+        /// The current state of the job.
+        /// </summary>
+        protected JobState State => JobStateInfo.State;
+        #endregion
+        #region Job State Operations
         /// <summary>
         /// Asynchronously resumes a suspended job. 
         /// Base implementation runs the synchronous <see cref="ResumeJob"/> method.
@@ -533,7 +505,11 @@ namespace PSSharp
         /// This method should call <see cref="Job2.OnUnblockJobCompleted(System.ComponentModel.AsyncCompletedEventArgs)"/> upon completion.
         /// </summary>
         public override void UnblockJobAsync() => UnblockJob();
+        }
 
+
+        #endregion
+        #region Object Overrides
         /// <inheritdoc/>
         /// <returns><see langword="true"/> if <paramref name="obj"/> is <see cref="Job"/> 
         /// and the <see cref="Job.InstanceId"/> of this and the target job match.</returns>
@@ -568,6 +544,11 @@ namespace PSSharp
                 catch { }
             }
             base.Dispose(disposing);
+            try
+            {
+                Disposed?.Invoke(this, EventArgs.Empty);
+            }
+            catch { }
         }
         public static bool operator ==(AdvancedJobBase left, Job right)
         {
@@ -577,5 +558,50 @@ namespace PSSharp
         {
             return !(left == right);
         }
+        #endregion
+        #region Constructor
+        /// <inheritdoc/>
+        protected AdvancedJobBase()
+            : base()
+        {
+            PSJobTypeName = GetType().Name;
+            ConfigureObservation();
+        }
+        /// <inheritdoc/>
+        protected AdvancedJobBase(string? command)
+            : base(command)
+        {
+            PSJobTypeName = GetType().Name;
+            ConfigureObservation();
+        }
+        /// <inheritdoc/>
+        protected AdvancedJobBase(string? command, string? name)
+            : base(command, name)
+        {
+            PSJobTypeName = GetType().Name;
+            ConfigureObservation();
+        }
+        /// <inheritdoc/>
+        protected AdvancedJobBase(string? command, string? name, Guid instanceId)
+            : base(command, name, instanceId)
+        {
+            PSJobTypeName = GetType().Name;
+            ConfigureObservation();
+        }
+        /// <inheritdoc/>
+        protected AdvancedJobBase(string? command, string? name, JobIdentifier token)
+            : base(command, name, token)
+        {
+            PSJobTypeName = GetType().Name;
+            ConfigureObservation();
+        }
+        /// <inheritdoc/>
+        protected AdvancedJobBase(string? command, string? name, IList<Job> childJobs)
+            : base(command, name, childJobs)
+        {
+            PSJobTypeName = GetType().Name;
+            ConfigureObservation();
+        }
+        #endregion
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Management.Automation;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -8,115 +9,205 @@ using System.Text;
 namespace PSSharp
 {
     /// <summary>
-    /// A job representing consecutive ping operations until the target responds or
-    /// the job is stopped.
+    /// A job representing consecutive ping operations until the target responds or the job is stopped.
     /// </summary>
-    public class PingJob : Job
+    public sealed class PingJob : AdvancedJobBase
     {
-        /// <inheritdoc/>
-        public override bool HasMoreData => Output.Count > 0;
-        /// <summary>The target of the <see cref="Ping"/>.</summary>
-        public override string Location => _location;
-        private readonly string _location;
-        /// <summary>Indicates the status or error message of the most recent <see cref="PingReply"/>.</summary>
-        public override string StatusMessage => _statusMessage;
-        private string _statusMessage;
         /// <summary>
-        /// The <see cref="Ping"/> represented by this <see cref="PingJob"/>.
+        /// Creates a new, unstarted instance of <see cref="PingJob"/>.
         /// </summary>
-        private Ping _ping;
-        /// <summary>
-        /// Stops the <see cref="Ping"/> loop.
-        /// </summary>
-        public override void StopJob()
+        /// <param name="command">The PowerShell script command responsible for the creation of the new job.</param>
+        /// <param name="name">The friendly name of the new job.</param>
+        /// <param name="computerNameOrIp">The ComputerName or IP address to be pinged by this job.</param>
+        public PingJob(string? command, string? name, string computerNameOrIp)
+            :base(command, name)
         {
-            SetJobState(JobState.Stopping);
-            _ping.SendAsyncCancel();
-        }
-        private void StartJob()
-        {
+            _location = computerNameOrIp ?? throw new ArgumentNullException(nameof(computerNameOrIp));
+            _sync = new object();
             _ping = new Ping();
+            _status = "Not Started";
             _ping.PingCompleted += OnPingCompleted;
             _ping.Disposed += (a, b) =>
             {
-                if (JobStateInfo.State == JobState.Running)
+                if (!IsFinished)
                 {
-                    _statusMessage = $"The job was stopped because the {nameof(Ping)} instance was disposed.";
-                    SetJobState(JobState.Stopped);
+                    Error.Add(new ErrorRecord(
+                        new ObjectDisposedException(nameof(Ping)),
+                        "PingDisposed",
+                        ErrorCategory.InvalidOperation,
+                        _ping));
+                    SetJobState(JobState.Failed);
                 }
             };
-            SetJobState(JobState.Running);
-            OnPingCompleted(null, null);
         }
-        private void OnPingCompleted(object? sender, PingCompletedEventArgs? args)
+        /// <summary>
+        /// Triggered when the <see cref="Ping"/> asynchronously completes an attempted ping operation,
+        /// successful or otherwise.
+        /// </summary>
+        public event PingCompletedEventHandler? PingCompleted
         {
-            if (sender is null || args is null)
+            add
             {
-                goto sendPing;
+                _ping.PingCompleted += value;
             }
-            else
+            remove
             {
-                // checking args.Cancelled always returns false, even after _ping.SendAsyncCancel()
-                if (JobStateInfo.State == JobState.Stopping || args.Cancelled)
+                _ping.PingCompleted -= value;
+            }
+        }
+        private void OnPingCompleted(object? sender, PingCompletedEventArgs? e)
+        {
+            Console.WriteLine("OnPingCompleted()");
+            lock (_sync)
+            {
+                if (IsFinished) return;
+
+                if (State == JobState.Stopping)
                 {
-                    _statusMessage = $"The job was stopped because the {nameof(Ping)} operation was cancelled.";
+                    _status = "The ping operation was stopped.";
                     SetJobState(JobState.Stopped);
+                    OnStopJobCompleted(new AsyncCompletedEventArgs(null, false, null));
                     return;
                 }
-                else if (args.Error != null)
+                else if (State == JobState.Suspending)
                 {
-                    _statusMessage = args.Error.ToString();
-                    goto sendPing;
+                    _status = "The ping operation was suspended.";
+                    SetJobState(JobState.Suspended);
+                    OnSuspendJobCompleted(new AsyncCompletedEventArgs(null, false, null));
+                    return;
                 }
-                else if (args.Reply.Status == IPStatus.Success)
+                else if (e?.Error != null)
                 {
-                    _statusMessage = args.Reply.Status.ToString();
-                    var output = new PingJobOutput(Location, args.Reply.Address);
+                    _status = e.Error?.ToString() ?? _status;
+                }
+                else if (e?.Reply.Status == IPStatus.Success)
+                {
+                    _isExecuting = false;
+                    var output = new PingJob.PingJobOutput(_location, e.Reply.Address);
                     Output.Add(PSObject.AsPSObject(output));
                     SetJobState(JobState.Completed);
                     return;
                 }
-                else
+                else if (e != null)
                 {
-                    _statusMessage = args.Reply.Status.ToString();
-                    goto sendPing;
+                    _status = e.Reply.Status.ToString();
                 }
-            }
-        sendPing:
-            {
+
+                var initState = State;
+                SetJobState(JobState.Running);
+                if (initState == JobState.NotStarted)
+                {
+                    OnStartJobCompleted(new AsyncCompletedEventArgs(null, false, null));
+                }
+                else if (initState == JobState.Suspended)
+                {
+                    OnResumeJobCompleted(new AsyncCompletedEventArgs(null, false, null));
+                }
                 _ping.SendAsync(Location, null);
             }
         }
+        
+        private readonly object _sync;
+        private readonly Ping _ping;
+        private readonly string _location;
+        private string _status;
+        /// <summary>
+        /// The most recent ping exception message or reply status.
+        /// </summary>
+        public override string StatusMessage => _status;
+        /// <summary>
+        /// The destination address of the ping.
+        /// </summary>
+        public sealed override string Location => _location;
+
         /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
+            lock(_sync)
+            {
+                if (State == JobState.Running)
+                {
+                    Error.Add(new ErrorRecord(
+                        new ObjectDisposedException(nameof(PingJob)),
+                        "JobDisposed",
+                        ErrorCategory.InvalidOperation,
+                        this));
+                    SetJobState(JobState.Failed);
+                }
+            }
             _ping.Dispose();
             base.Dispose(disposing);
         }
-        internal PingJob(string? command, string? name, string computerNameOrIp)
-            : base(command, name)
+        /// <summary>Returns the location (ComputerName or IP address) destination of the ping.</summary>
+        /// <returns><see cref="PingJob.Location"/></returns>
+        public override string ToString() => Location;
+        /// <inheritdoc/>
+        public override void ResumeJob()
         {
-            PSJobTypeName = nameof(PingJob);
-            _location = computerNameOrIp;
-            _statusMessage = "Sending first ping.";
-            _ping = null!; // set in StartJob
-            StartJob();
+            lock (_sync)
+            {
+                if (State != JobState.Suspended)
+                {
+                    throw new InvalidJobStateException(State, "The job cannot be resumed unless the current state is Suspended.");
+                }
+                OnPingCompleted(null, null);
+            }
         }
         /// <inheritdoc/>
-        public override string ToString() => Location;
+        public override void StartJob()
+        {
+            lock (_sync)
+            {
+                if (State != JobState.NotStarted)
+                {
+                    throw new InvalidJobStateException(State, "The job cannot be started unless the current state is NotStarted.");
+                }
+                OnPingCompleted(null, null);
+            }
+        }
+        /// <inheritdoc/>
+        public override void StopJob(bool force, string reason)
+        {
+            lock(_sync)
+            {
+                if (!IsFinished)
+                {
+                    SetJobState(IsHalted ? JobState.Stopped : JobState.Stopping);
+                }
+            }
+        }
+        /// <inheritdoc/>
+        public override void SuspendJob(bool force, string reason)
+        {
+            lock(_sync)
+            {
+                if (IsFinished)
+                {
+                    throw new InvalidJobStateException(State, "The job cannot be suspended unless the current state is not terminal.");
+                }
+                if (IsHalted)
+                {
+                    SetJobState(JobState.Suspended);
+                }
+                else
+                {
+                    SetJobState(JobState.Suspending);
+                }
+            }
+        }
+        /// <inheritdoc/>
+        public override void UnblockJob()
+        {
+            throw new NotSupportedException();
+        }
 
-        /// <summary>
-        /// Represents information regarding the response of the most recent ping.
-        /// </summary>
+
+        /// <summary>Represents information regarding the response of the conclusive ping.</summary>
         public class PingJobOutput
         {
-            /// <summary>
-            /// The target of the ping.
-            /// </summary>
+            /// <summary>The target of the ping.</summary>
             public string ComputerName { get; }
-            /// <summary>
-            /// The address from which the response was received.
-            /// </summary>
+            /// <summary>The address from which the response was received.</summary>
             public IPAddress? Address { get; }
             internal PingJobOutput(string computerName, IPAddress address)
             {

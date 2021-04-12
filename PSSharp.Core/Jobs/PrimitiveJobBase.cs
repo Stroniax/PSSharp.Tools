@@ -11,6 +11,9 @@ namespace PSSharp
     /// </summary>
     public abstract class PrimitiveJobBase : Job, IPSObservable<PSObject>, IObservable<PSObject>
     {
+        #region Events
+        public event EventHandler? Disposed;
+        #endregion
         #region IObservable<> & IPSObservable<> implementation
         /// <summary>
         /// Used to lock when executing observer actions.
@@ -383,45 +386,7 @@ namespace PSSharp
             }
         }
         #endregion
-        #region Constructor
-        /// <inheritdoc/>
-        protected PrimitiveJobBase()
-            : base()
-        {
-            ConfigureObservation();
-        }
-        /// <inheritdoc/>
-        protected PrimitiveJobBase(string? command)
-            : base(command)
-        {
-            ConfigureObservation();
-        }
-        /// <inheritdoc/>
-        protected PrimitiveJobBase(string? command, string? name)
-            : base(command, name)
-        {
-            ConfigureObservation();
-        }
-        /// <inheritdoc/>
-        protected PrimitiveJobBase(string? command, string? name, Guid instanceId)
-            : base(command, name, instanceId)
-        {
-            ConfigureObservation();
-        }
-        /// <inheritdoc/>
-        protected PrimitiveJobBase(string? command, string? name, JobIdentifier token)
-            : base(command, name, token)
-        {
-            ConfigureObservation();
-        }
-        /// <inheritdoc/>
-        protected PrimitiveJobBase(string? command, string? name, IList<Job> childJobs)
-            : base(command, name, childJobs)
-        {
-            ConfigureObservation();
-        }
-        #endregion
-
+        #region Job Overrides
         /// <summary>
         /// Indicates whether the job has data (from <see cref="Job.Output"/>, <see cref="Job.Error"/>, etc.) that has not been cleared.
         /// </summary>
@@ -444,7 +409,6 @@ namespace PSSharp
         /// </summary>
         [PSDefaultValue(Value = null, Help = "The current status of the job.")]
         public override string? StatusMessage => null;
-
         /// <summary>
         /// Indicates whether the job state is any state that indicates termination,
         /// including any of the following job states.
@@ -505,8 +469,17 @@ namespace PSSharp
                 }
             }
         }
-
-
+        /// <summary>
+        /// The current state of the job.
+        /// </summary>
+        protected JobState State => JobStateInfo.State;
+        #endregion
+        #region Object Overrides
+        /// <summary>
+        /// Returns the name of this job.
+        /// </summary>
+        /// <returns><see cref="Job.Name"/></returns>
+        public override string ToString() => Name;
         /// <inheritdoc/>
         /// <returns><see langword="true"/> if <paramref name="obj"/> is <see cref="Job"/> 
         /// and the <see cref="Job.InstanceId"/> of this and the target job match.</returns>
@@ -541,6 +514,11 @@ namespace PSSharp
                 catch { }
             }
             base.Dispose(disposing);
+            try
+            {
+                Disposed?.Invoke(this, EventArgs.Empty);
+            }
+            catch { }
         }
         public static bool operator ==(PrimitiveJobBase left, Job right)
         {
@@ -550,5 +528,50 @@ namespace PSSharp
         {
             return !(left == right);
         }
+        #endregion
+        #region Constructor
+        /// <inheritdoc/>
+        protected PrimitiveJobBase()
+            : base()
+        {
+            PSJobTypeName = GetType().Name;
+            ConfigureObservation();
+        }
+        /// <inheritdoc/>
+        protected PrimitiveJobBase(string? command)
+            : base(command)
+        {
+            PSJobTypeName = GetType().Name;
+            ConfigureObservation();
+        }
+        /// <inheritdoc/>
+        protected PrimitiveJobBase(string? command, string? name)
+            : base(command, name)
+        {
+            PSJobTypeName = GetType().Name;
+            ConfigureObservation();
+        }
+        /// <inheritdoc/>
+        protected PrimitiveJobBase(string? command, string? name, Guid instanceId)
+            : base(command, name, instanceId)
+        {
+            PSJobTypeName = GetType().Name;
+            ConfigureObservation();
+        }
+        /// <inheritdoc/>
+        protected PrimitiveJobBase(string? command, string? name, JobIdentifier token)
+            : base(command, name, token)
+        {
+            PSJobTypeName = GetType().Name;
+            ConfigureObservation();
+        }
+        /// <inheritdoc/>
+        protected PrimitiveJobBase(string? command, string? name, IList<Job> childJobs)
+            : base(command, name, childJobs)
+        {
+            PSJobTypeName = GetType().Name;
+            ConfigureObservation();
+        }
+        #endregion
     }
 }
