@@ -4,45 +4,90 @@ using System.Collections.Generic;
 using System.Management.Automation;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 
 namespace PSSharp
 {
     /// <summary>
-    /// Used to <see langword="await"/> a PowerShell <see cref="Job"/>.
+    /// Used to <see langword="await"/> a PowerShell <see cref="Job"/>. Note that if the job
+    /// fails, a generic <see cref="JobFailedException"/> will be thrown by the <see cref="GetResult"/>
+    /// method not representing the terminal error of the job.
     /// </summary>
     public struct JobAwaiter : IAwaiter
     {
+        private readonly Job _job;
+        private bool _finished;
+        private object _sync;
+        private Queue<Action> _continuations;
+
         /// <summary>
-        /// Indicates if this <see cref="Job"/> has completed.
+        /// Indicates if the <see cref="JobStateInfo.State"/> of the <see cref="Job"/> is any of the following
+        /// terminal job states:
+        /// <list type="bullet">
+        /// <item><see cref="JobState.Completed"/></item>
+        /// <item><see cref="JobState.Failed"/></item>
+        /// <item><see cref="JobState.Stopped"/></item>
+        /// <item><see cref="JobState.Disconnected"/></item>
+        /// </list>
         /// </summary>
         public bool IsCompleted
         {
             get
             {
-                return _job.IsFinished();
+                return _finished;
             }
         }
-
-        private readonly Job _job;
         internal JobAwaiter(Job job)
         {
+            _finished = false;
+            _sync = new object();
+            _continuations = new Queue<Action>();
             _job = job ?? throw new ArgumentNullException(nameof(job));
+            _job.StateChanged += OnJobStateChanged;
+            if (_job.IsFinished())
+            {
+                _job.StateChanged -= OnJobStateChanged;
+                _finished = true;
+            }
+        }
+        private void OnJobStateChanged(object sender, JobStateEventArgs e)
+        {
+            lock (_sync)
+            {
+                var state = e.JobStateInfo.State;
+                switch (state)
+                {
+                    case JobState.Completed:
+                    case JobState.Failed:
+                    case JobState.Stopped:
+                    case JobState.Disconnected:
+                        {
+                            _finished = true;
+                            while (_continuations.Count > 0)
+                            {
+                                _continuations.Dequeue()();
+                            }
+                        }
+                        break;
+                }
+            }
         }
         /// <summary>
-        /// Waits for the <see cref="Job"/> to complete.
+        /// Blocks until the job has completed (using <see cref="Job.Finished"/>),
+        /// and throws <see cref="JobFailedException"/> if the state of the job is 
+        /// <see cref="JobState.Failed"/>.
         /// </summary>
         public void GetResult()
         {
             // it seems... await Job does the following:
             // Creates the awaiter (JobAwaiter, in this case)
-            // executes JobAwaiter.OnCompleted([the rest of the method that follows the "await" keyword])
+            // executes JobAwaiter.OnCompleted(Action), passing the rest of the method that follows the "await" keyword as Action
             // asynchronously waits for JobAwaiter.IsCompleted to be true
             // executes JobAwaiter.GetResult()
             // I'm not sure where the above two lines fit into the OnCompleted call. Presumably at the beginning.
-            while (!_job.IsFinished())
-            {
-                _job.Finished.WaitOne(100);
-            }
+            _job.Finished.WaitOne();
+            if (_job.JobStateInfo.State == JobState.Failed)
+                throw new JobFailedException();
         }
         /// <summary>
         /// Subscribes an <see cref="Action"/> to be executed when <see cref="IsCompleted"/> is <see langword="true"/>.
@@ -50,20 +95,16 @@ namespace PSSharp
         /// <param name="continuation"></param>
         public void OnCompleted(Action continuation)
         {
-            if (_job.IsFinished())
+            lock(_sync)
             {
-                continuation.Invoke();
-            }
-            else
-            {
-                _job.StateChanged += (a, b) =>
+                if (_finished)
                 {
-                    var job = a as Job;
-                    if (job?.IsFinished() ?? false)
-                    {
-                        continuation.Invoke();
-                    }
-                };
+                    continuation();
+                }
+                else
+                {
+                    _continuations.Enqueue(continuation);
+                }
             }
         }
     }
