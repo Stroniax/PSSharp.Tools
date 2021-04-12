@@ -57,7 +57,6 @@ namespace PSSharp
         }
         private void OnPingCompleted(object? sender, PingCompletedEventArgs? e)
         {
-            Console.WriteLine("OnPingCompleted()");
             lock (_sync)
             {
                 if (IsFinished) return;
@@ -82,7 +81,6 @@ namespace PSSharp
                 }
                 else if (e?.Reply.Status == IPStatus.Success)
                 {
-                    _isExecuting = false;
                     var output = new PingJob.PingJobOutput(_location, e.Reply.Address);
                     Output.Add(PSObject.AsPSObject(output));
                     SetJobState(JobState.Completed);

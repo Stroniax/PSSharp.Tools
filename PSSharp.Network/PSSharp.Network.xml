@@ -246,41 +246,32 @@
         </member>
         <member name="T:PSSharp.PingJob">
             <summary>
-            A job representing consecutive ping operations until the target responds or
-            the job is stopped.
+            A job representing consecutive ping operations until the target responds or the job is stopped.
             </summary>
-        </member>
-        <member name="P:PSSharp.PingJob.Location">
-            <summary>The target of the <see cref="T:System.Net.NetworkInformation.Ping"/>.</summary>
-        </member>
-        <member name="P:PSSharp.PingJob.StatusMessage">
-            <summary>Indicates the status or error message of the most recent <see cref="T:System.Net.NetworkInformation.PingReply"/>.</summary>
-        </member>
-        <member name="F:PSSharp.PingJob._ping">
-            <summary>The <see cref="T:System.Net.NetworkInformation.Ping"/> represented by this <see cref="T:PSSharp.PingJob"/>.</summary>
         </member>
         <member name="M:PSSharp.PingJob.#ctor(System.String,System.String,System.String)">
             <summary>
-            Constructs a new unstarted <see cref="T:PSSharp.PingJob"/>.
+            Creates a new, unstarted instance of <see cref="T:PSSharp.PingJob"/>.
             </summary>
-            <param name="command"></param>
-            <param name="name"></param>
-            <param name="computerNameOrIp"></param>
+            <param name="command">The PowerShell script command responsible for the creation of the new job.</param>
+            <param name="name">The friendly name of the new job.</param>
+            <param name="computerNameOrIp">The ComputerName or IP address to be pinged by this job.</param>
         </member>
-        <member name="M:PSSharp.PingJob.StartJob(System.String,System.String,System.String)">
+        <member name="E:PSSharp.PingJob.PingCompleted">
             <summary>
-            Starts a new <see cref="T:PSSharp.PingJob"/> awaiting successful connection to the destination.
+            Triggered when the <see cref="T:System.Net.NetworkInformation.Ping"/> asynchronously completes an attempted ping operation,
+            successful or otherwise.
             </summary>
-            <param name="computerNameOrIp">The target address of the ping.</param>
-            <param name="name"></param>
-            <param name="command"></param>
-            <returns></returns>
         </member>
-        <member name="M:PSSharp.PingJob.StartJob">
-            <summary>Starts asynchronously sending the <see cref="T:System.Net.NetworkInformation.Ping"/> until successful.</summary>
+        <member name="P:PSSharp.PingJob.StatusMessage">
+            <summary>
+            The most recent ping exception message or reply status.
+            </summary>
         </member>
-        <member name="M:PSSharp.PingJob.StopJob">
-            <summary>Stops the <see cref="T:System.Net.NetworkInformation.Ping"/> loop.</summary>
+        <member name="P:PSSharp.PingJob.Location">
+            <summary>
+            The destination address of the ping.
+            </summary>
         </member>
         <member name="M:PSSharp.PingJob.Dispose(System.Boolean)">
             <inheritdoc/>
@@ -289,6 +280,21 @@
             <summary>Returns the location (ComputerName or IP address) destination of the ping.</summary>
             <returns><see cref="P:PSSharp.PingJob.Location"/></returns>
         </member>
+        <member name="M:PSSharp.PingJob.ResumeJob">
+            <inheritdoc/>
+        </member>
+        <member name="M:PSSharp.PingJob.StartJob">
+            <inheritdoc/>
+        </member>
+        <member name="M:PSSharp.PingJob.StopJob(System.Boolean,System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:PSSharp.PingJob.SuspendJob(System.Boolean,System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:PSSharp.PingJob.UnblockJob">
+            <inheritdoc/>
+        </member>
         <member name="T:PSSharp.PingJob.PingJobOutput">
             <summary>Represents information regarding the response of the conclusive ping.</summary>
         </member>
@@ -296,66 +302,6 @@
             <summary>The target of the ping.</summary>
         </member>
         <member name="P:PSSharp.PingJob.PingJobOutput.Address">
-            <summary>The address from which the response was received.</summary>
-        </member>
-        <member name="T:PSSharp.PingJob2">
-            <summary>
-            A job representing consecutive ping operations until the target responds or the job is stopped.
-            </summary>
-        </member>
-        <member name="M:PSSharp.PingJob2.#ctor(System.String,System.String,System.String)">
-            <summary>
-            Creates a new, unstarted instance of <see cref="T:PSSharp.PingJob2"/>.
-            </summary>
-            <param name="command">The PowerShell script command responsible for the creation of the new job.</param>
-            <param name="name">The friendly name of the new job.</param>
-            <param name="computerNameOrIp">The ComputerName or IP address to be pinged by this job.</param>
-        </member>
-        <member name="E:PSSharp.PingJob2.PingCompleted">
-            <summary>
-            Triggered when the <see cref="T:System.Net.NetworkInformation.Ping"/> asynchronously completes an attempted ping operation,
-            successful or otherwise.
-            </summary>
-        </member>
-        <member name="P:PSSharp.PingJob2.StatusMessage">
-            <summary>
-            The most recent ping exception message or reply status.
-            </summary>
-        </member>
-        <member name="P:PSSharp.PingJob2.Location">
-            <summary>
-            The destination address of the ping.
-            </summary>
-        </member>
-        <member name="M:PSSharp.PingJob2.Dispose(System.Boolean)">
-            <inheritdoc/>
-        </member>
-        <member name="M:PSSharp.PingJob2.ToString">
-            <summary>Returns the location (ComputerName or IP address) destination of the ping.</summary>
-            <returns><see cref="P:PSSharp.PingJob.Location"/></returns>
-        </member>
-        <member name="M:PSSharp.PingJob2.ResumeJob">
-            <inheritdoc/>
-        </member>
-        <member name="M:PSSharp.PingJob2.StartJob">
-            <inheritdoc/>
-        </member>
-        <member name="M:PSSharp.PingJob2.StopJob(System.Boolean,System.String)">
-            <inheritdoc/>
-        </member>
-        <member name="M:PSSharp.PingJob2.SuspendJob(System.Boolean,System.String)">
-            <inheritdoc/>
-        </member>
-        <member name="M:PSSharp.PingJob2.UnblockJob">
-            <inheritdoc/>
-        </member>
-        <member name="T:PSSharp.PingJob2.PingJobOutput">
-            <summary>Represents information regarding the response of the conclusive ping.</summary>
-        </member>
-        <member name="P:PSSharp.PingJob2.PingJobOutput.ComputerName">
-            <summary>The target of the ping.</summary>
-        </member>
-        <member name="P:PSSharp.PingJob2.PingJobOutput.Address">
             <summary>The address from which the response was received.</summary>
         </member>
         <member name="T:PSSharp.WakeOnLan">

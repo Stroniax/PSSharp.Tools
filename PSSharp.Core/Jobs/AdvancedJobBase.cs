@@ -505,9 +505,6 @@ namespace PSSharp
         /// This method should call <see cref="Job2.OnUnblockJobCompleted(System.ComponentModel.AsyncCompletedEventArgs)"/> upon completion.
         /// </summary>
         public override void UnblockJobAsync() => UnblockJob();
-        }
-
-
         #endregion
         #region Object Overrides
         /// <inheritdoc/>
