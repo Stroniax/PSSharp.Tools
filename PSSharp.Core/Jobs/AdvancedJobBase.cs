@@ -24,7 +24,7 @@ namespace PSSharp
         /// <summary>
         /// Data written to the job, captured in the proper order.
         /// </summary>
-        private ConcurrentQueue<JobOutput> _output = new ConcurrentQueue<JobOutput>();
+        private ConcurrentQueue<PSOutput<PSObject>> _output = new ConcurrentQueue<PSOutput<PSObject>>();
         /// <summary>
         /// <see cref="IPSObserver{T}"/> instances observing this job.
         /// </summary>
@@ -211,7 +211,7 @@ namespace PSSharp
         {
             lock (_observationSync)
             {
-                _output.Enqueue(new JobOutput(Debug[e.Index]));
+                _output.Enqueue(new PSOutput<PSObject>(Debug[e.Index]));
                 foreach (var observer in _psObservers)
                 {
                     observer.OnDebug(Debug[e.Index].Message);
@@ -222,7 +222,7 @@ namespace PSSharp
         {
             lock (_observationSync)
             {
-                _output.Enqueue(new JobOutput(Information[e.Index]));
+                _output.Enqueue(new PSOutput<PSObject>(Information[e.Index]));
                 foreach (var observer in _psObservers)
                 {
                     observer.OnInformation(Information[e.Index]);
@@ -233,7 +233,7 @@ namespace PSSharp
         {
             lock (_observationSync)
             {
-                _output.Enqueue(new JobOutput(Warning[e.Index]));
+                _output.Enqueue(new PSOutput<PSObject>(Warning[e.Index]));
                 foreach (var observer in _psObservers)
                 {
                     observer.OnWarning(Warning[e.Index].Message);
@@ -244,7 +244,7 @@ namespace PSSharp
         {
             lock (_observationSync)
             {
-                _output.Enqueue(new JobOutput(Progress[e.Index]));
+                _output.Enqueue(new PSOutput<PSObject>(Progress[e.Index]));
                 foreach (var observer in _psObservers)
                 {
                     observer.OnProgress(Progress[e.Index]);
@@ -255,7 +255,7 @@ namespace PSSharp
         {
             lock (_observationSync)
             {
-                _output.Enqueue(new JobOutput(Verbose[e.Index]));
+                _output.Enqueue(new PSOutput<PSObject>(Verbose[e.Index]));
                 foreach (var observer in _psObservers)
                 {
                     observer.OnVerbose(Verbose[e.Index].Message);
@@ -266,7 +266,7 @@ namespace PSSharp
         {
             lock (_observationSync)
             {
-                _output.Enqueue(new JobOutput(Error[e.Index]));
+                _output.Enqueue(new PSOutput<PSObject>(Error[e.Index]));
                 foreach (var observer in _psObservers)
                 {
                     observer.OnError(Error[e.Index]);
@@ -278,7 +278,7 @@ namespace PSSharp
         {
             lock (_observationSync)
             {
-                _output.Enqueue(new JobOutput(Output[e.Index]));
+                _output.Enqueue(new PSOutput<PSObject>(Output[e.Index]));
                 foreach (var observer in _psObservers)
                 {
                     observer.OnOutput(Output[e.Index]);

@@ -3,10 +3,10 @@ using System.Management.Automation;
 
 namespace PSSharp
 {
-    internal class JobOutput
+    internal class PSOutput<T>
     {
         public PowerShellStreamType Stream { get; }
-        public PSObject? Output { get; }
+        public T Output { get; } = default!;
         public ErrorRecord? Error { get; }
         public VerboseRecord? Verbose { get; }
         public DebugRecord? Debug { get; }
@@ -14,37 +14,37 @@ namespace PSSharp
         public ProgressRecord? Progress { get; }
         public WarningRecord? Warning { get; }
 
-        public JobOutput(PSObject? output)
+        public PSOutput(T output)
         {
             Stream = PowerShellStreamType.Output;
             Output = output;
         }
-        public JobOutput(ErrorRecord error)
+        public PSOutput(ErrorRecord error)
         {
             Stream = PowerShellStreamType.Error;
             Error = error ?? throw new ArgumentNullException(nameof(error));
         }
-        public JobOutput(WarningRecord warning)
+        public PSOutput(WarningRecord warning)
         {
             Stream = PowerShellStreamType.Warning;
             Warning = warning ?? throw new ArgumentNullException(nameof(warning));
         }
-        public JobOutput(VerboseRecord verbose)
+        public PSOutput(VerboseRecord verbose)
         {
             Stream = PowerShellStreamType.Verbose;
             Verbose = verbose ?? throw new ArgumentNullException(nameof(verbose));
         }
-        public JobOutput(DebugRecord debug)
+        public PSOutput(DebugRecord debug)
         {
             Stream = PowerShellStreamType.Debug;
             Debug = debug ?? throw new ArgumentNullException(nameof(debug));
         }
-        public JobOutput(ProgressRecord progress)
+        public PSOutput(ProgressRecord progress)
         {
             Stream = PowerShellStreamType.Progress;
             Progress = progress ?? throw new ArgumentNullException(nameof(progress));
         }
-        public JobOutput(InformationRecord information)
+        public PSOutput(InformationRecord information)
         {
             Stream = PowerShellStreamType.Information;
             Information = information ?? throw new ArgumentNullException(nameof(information));

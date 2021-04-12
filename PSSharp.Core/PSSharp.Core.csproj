@@ -47,6 +47,10 @@
 	  </None>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Jobs\TaskJob\" />
+	</ItemGroup>
+
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
 	  <Exec Command="$(PowerShellPath) -NoProfile -ExecutionPolicy RemoteSigned -File $(PSPrebuildScript) -Configuration $(ConfigurationName) -ProjectName $(ProjectName) -TargetName $(TargetName) -TargetPath $(TargetPath) -TargetDirectory $(TargetDir) -ProjectDirectory $(ProjectDir) -ModuleName $(PSModuleName)" />
 	</Target>
