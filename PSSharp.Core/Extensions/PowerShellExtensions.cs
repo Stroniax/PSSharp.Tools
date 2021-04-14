@@ -61,33 +61,33 @@ namespace PSSharp.Extensions
             });
         }
 
-        public static IObservable<TOutput> InvokeAsObservable<TInput, TOutput>(this PowerShell source)
+        public static IObservable<PSObject> InvokeAsObservable(this PowerShell source)
         {
             if (source is null) throw new ArgumentNullException(nameof(source));
-            var observable = new ObservablePowerShellInvocation<TInput, TOutput>(source);
+            var observable = new ObservablePowerShellInvocation<PSObject, PSObject>(source);
             return observable.Invoke();
         }
-        public static IPSObservable<TOutput> InvokeAsPSObservable<TInput, TOutput>(this PowerShell source)
+        public static IPSObservable<PSObject> InvokeAsPSObservable(this PowerShell source)
         {
             if (source is null) throw new ArgumentNullException(nameof(source));
-            var observable = new ObservablePowerShellInvocation<TInput, TOutput>(source);
+            var observable = new ObservablePowerShellInvocation<PSObject, PSObject>(source);
             return observable.Invoke();
         }
-        public static IObservable<TOutput> InvokeAsObservable<TInput, TOutput>(this PowerShell source,
+        public static IObservable<PSObject> InvokeAsObservable<TInput>(this PowerShell source,
                                                                                PSDataCollection<TInput> input)
         {
             if (source is null) throw new ArgumentNullException(nameof(source));
-            var observable = new ObservablePowerShellInvocation<TInput, TOutput>(source)
+            var observable = new ObservablePowerShellInvocation<TInput, PSObject>(source)
             {
                 Input = input ?? throw new ArgumentNullException(nameof(input)),
             };
             return observable.Invoke();
         }
-        public static IPSObservable<TOutput> InvokeAsPSObservable<TInput, TOutput>(this PowerShell source,
+        public static IPSObservable<PSObject> InvokeAsPSObservable<TInput>(this PowerShell source,
                                                                                    PSDataCollection<TInput> input)
         {
             if (source is null) throw new ArgumentNullException(nameof(source));
-            var observable = new ObservablePowerShellInvocation<TInput, TOutput>(source)
+            var observable = new ObservablePowerShellInvocation<TInput, PSObject>(source)
             {
                 Input = input ?? throw new ArgumentNullException(nameof(input)),
             };

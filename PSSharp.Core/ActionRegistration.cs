@@ -7,7 +7,9 @@ namespace PSSharp
     /// </summary>
     internal class ActionRegistration : IDisposable
     {
-        public static ActionRegistration None { get; } = new ActionRegistration(null!);
+        public static ActionRegistration None { get; } = new ActionRegistration();
+        private ActionRegistration() { }
+
 
         /// <inheritdoc cref="ActionRegistration"/>
         /// <param name="action"><inheritdoc cref="_action" path="/summary"/></param>
