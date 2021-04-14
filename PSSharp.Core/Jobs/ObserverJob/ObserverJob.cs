@@ -1,514 +1,735 @@
-﻿using PSSharp.Extensions;
-using System;
-using System.Collections.Concurrent;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
 using System.Reactive.Linq;
-using System.Text;
-using System.Threading;
 
 namespace PSSharp
 {
-    // because PowerShell doesn't like generic cmdlets, I have to make a non-generic ObserverJob from which ObserverJob<> can be derived
-    public class ObserverJob : Job
+    /// <summary>
+    /// A job to observe one or more <see cref="IObservable{T}"/> or <see cref="IPSObservable{T}"/> instances.
+    /// </summary>
+    public class ObserverJob : AdvancedJobBase
     {
-        #region Constructor
-        protected ObserverJob(ExecutionMode executionMode)
+        #region nested classes
+        private class ChildJobList : IList<Job>
         {
-            PSJobTypeName = "ObserverJob";
-            _executionMode = executionMode;
-        }
-        protected ObserverJob(ExecutionMode executionMode, string? command)
-            : base(command)
-        {
-            PSJobTypeName = "ObserverJob";
-            _executionMode = executionMode;
-        }
-        protected ObserverJob(ExecutionMode executionMode, string? command, string? name)
-            : base(command, name)
-        {
-            PSJobTypeName = "ObserverJob";
-            _executionMode = executionMode;
-        }
-        protected ObserverJob(ExecutionMode executionMode, string? command, string? name, Guid instanceId)
-            : base(command, name, instanceId)
-        {
-            PSJobTypeName = "ObserverJob";
-            _executionMode = executionMode;
-        }
-        protected ObserverJob(ExecutionMode executionMode, string? command, string? name, JobIdentifier jobIdentifier)
-            : base(command, name, jobIdentifier)
-        {
-            PSJobTypeName = "ObserverJob";
-            _executionMode = executionMode;
-        }
-        #region Static Start Methods
-        public static ObserverJob<T> StartJob<T>(string? command, string? name, IObservable<T> source)
-            => StartJob(command, name, executionMode: ExecutionMode.Concurrent, observableSources: source);
-        /// <summary>
-        /// <para>To provide multiple types of observers, use 
-        /// <see cref="Observable.Select{TSource, TResult}(IObservable{TSource}, Func{TSource, int, TResult})"/>
-        /// with <see cref="PSObject.AsPSObject(object)"/> to cast all objects to <see cref="PSObject"/>.</para>
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="command"></param>
-        /// <param name="name"></param>
-        /// <param name="executionMode"></param>
-        /// <param name="observableSources"></param>
-        /// <returns></returns>
-        public static ObserverJob<T> StartJob<T>(string? command, string? name, ExecutionMode executionMode, params IObservable<T>[] observableSources)
-            => StartJob(command, name, executionMode, (IEnumerable<IObservable<T>>)observableSources);
-        public static ObserverJob<T> StartJob<T>(string? command, string? name, ExecutionMode executionMode, IEnumerable<IObservable<T>> observableSources)
-            => ObserverJob<T>.StartJob(command, name, executionMode, observableSources);
-        public static ObserverJob StartJob<T1, T2>(string? command, string? name, ExecutionMode executionMode, IObservable<T1> p1, IObservable<T2> p2)
-        {
-            var job = new ObserverJob(executionMode, command, name);
-            job.AddObserver(p1);
-            job.AddObserver(p2);
-            job.StartJob();
-            return job;
-        }
-        public static ObserverJob StartJob<T1, T2, T3>(string? command, string? name, ExecutionMode executionMode, IObservable<T1> p1, IObservable<T2> p2, IObservable<T3> p3)
-        {
-            var job = new ObserverJob(executionMode, command, name);
-            job.AddObserver(p1);
-            job.AddObserver(p2);
-            job.AddObserver(p3);
-            job.StartJob();
-            return job;
-        }
-        public static ObserverJob StartJob<T1, T2, T3, T4>(string? command, string? name, ExecutionMode executionMode, IObservable<T1> p1, IObservable<T2> p2, IObservable<T3> p3, IObservable<T4> p4)
-        {
-            var job = new ObserverJob(executionMode, command, name);
-            job.AddObserver(p1);
-            job.AddObserver(p2);
-            job.AddObserver(p3);
-            job.AddObserver(p4);
-            job.StartJob();
-            return job;
-        }
-        public static ObserverJob StartJob<T1, T2, T3, T4, T5>(string? command, string? name, ExecutionMode executionMode, IObservable<T1> p1, IObservable<T2> p2, IObservable<T3> p3, IObservable<T4> p4, IObservable<T5> p5)
-        {
-            var job = new ObserverJob(executionMode, command, name);
-            job.AddObserver(p1);
-            job.AddObserver(p2);
-            job.AddObserver(p3);
-            job.AddObserver(p4);
-            job.AddObserver(p5);
-            job.StartJob();
-            return job;
-        }
-        public static ObserverJob StartJob<T1, T2, T3, T4, T5, T6>(string? command, string? name, ExecutionMode executionMode, IObservable<T1> p1, IObservable<T2> p2, IObservable<T3> p3, IObservable<T4> p4, IObservable<T5> p5, IObservable<T6> p6)
-        {
-            var job = new ObserverJob(executionMode, command, name);
-            job.AddObserver(p1);
-            job.AddObserver(p2);
-            job.AddObserver(p3);
-            job.AddObserver(p4);
-            job.AddObserver(p5);
-            job.AddObserver(p6);
-            job.StartJob();
-            return job;
-        }
-        public static ObserverJob StartJob<T1, T2, T3, T4, T5, T6, T7>(string? command, string? name, ExecutionMode executionMode, IObservable<T1> p1, IObservable<T2> p2, IObservable<T3> p3, IObservable<T4> p4, IObservable<T5> p5, IObservable<T6> p6, IObservable<T7> p7)
-        {
-            var job = new ObserverJob(executionMode, command, name);
-            job.AddObserver(p1);
-            job.AddObserver(p2);
-            job.AddObserver(p3);
-            job.AddObserver(p4);
-            job.AddObserver(p5);
-            job.AddObserver(p6);
-            job.AddObserver(p7);
-            job.StartJob();
-            return job;
-        }
-        public static ObserverJob StartJob<T1, T2, T3, T4, T5, T6, T7, T8>(string? command, string? name, ExecutionMode executionMode, IObservable<T1> p1, IObservable<T2> p2, IObservable<T3> p3, IObservable<T4> p4, IObservable<T5> p5, IObservable<T6> p6, IObservable<T7> p7, IObservable<T8> p8)
-        {
-            var job = new ObserverJob(executionMode, command, name);
-            job.AddObserver(p1);
-            job.AddObserver(p2);
-            job.AddObserver(p3);
-            job.AddObserver(p4);
-            job.AddObserver(p5);
-            job.AddObserver(p6);
-            job.AddObserver(p7);
-            job.AddObserver(p8);
-            job.StartJob();
-            return job;
-        }
-        public static ObserverJob StartJob<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string? command, string? name, ExecutionMode executionMode, IObservable<T1> p1, IObservable<T2> p2, IObservable<T3> p3, IObservable<T4> p4, IObservable<T5> p5, IObservable<T6> p6, IObservable<T7> p7, IObservable<T8> p8, IObservable<T9> p9)
-        {
-            var job = new ObserverJob(executionMode, command, name);
-            job.AddObserver(p1);
-            job.AddObserver(p2);
-            job.AddObserver(p3);
-            job.AddObserver(p4);
-            job.AddObserver(p5);
-            job.AddObserver(p6);
-            job.AddObserver(p7);
-            job.AddObserver(p8);
-            job.AddObserver(p9);
-            job.StartJob();
-            return job;
-        }
-        public static ObserverJob StartJob<T>(string? command, string? name, ExecutionMode executionMode, IObservable<IObservable<T>> observableGenerator)
-        {
-            var job = new ObserverJob(executionMode, command, name);
-            job.StartJob(observableGenerator);
-            return job;
-        }
+            private List<Job> _jobs = new List<Job>();
+            internal void ForEach(Action<Job> action)
+            {
+                foreach (var job in _jobs)
+                {
+                    action(job);
+                }
+            }
+            Job IList<Job>.this[int index] { get => _jobs[index]; set => throw new NotSupportedException(); }
 
-        #endregion
-        #endregion
-        #region Public Properties
-        public override bool HasMoreData => this.AnyStreamHasData();
-        public override string Location => Environment.MachineName;
-        public override string StatusMessage
-        {
-            get
-            {
-                lock (_syncRoot)
-                {
-                    if (!_started)
-                    {
-                        return "Awaiting Start";
-                    }
-                    if (!_isGeneratorComplete)
-                    {
-                        return $"Awaiting {_observers.Count + _startObservers.Count}(+) Observer(s)";
-                    }
-                    if (_observers.Count + _startObservers.Count == 0)
-                    {
-                        return "Finished";
-                    }
-                    else
-                    {
-                        return $"Awaiting {_observers.Count + _startObservers.Count} Observer(s)";
-                    }
-                }
-            }
-        }
-        /// <summary>
-        /// The number of observers currently executing.
-        /// </summary>
-        public int ExecutingObserverCount
-        {
-            get
-            {
-                lock (_syncRoot)
-                {
-                    return _observers.Count;
-                }
-            }
-        }
-        /// <summary>
-        /// The number of observers queued to be started when the current observer completes.
-        /// </summary>
-        public int QueuedObserverCount
-        {
-            get
-            {
-                lock (_syncRoot)
-                {
-                    return _startObservers.Count;
-                }
-            }
-        }
+            public int Count => ((ICollection<Job>)_jobs).Count;
 
+            public bool IsReadOnly => true;
+
+            void ICollection<Job>.Add(Job item) => throw new NotSupportedException();
+
+            void ICollection<Job>.Clear() => throw new NotSupportedException();
+
+            public bool Contains(Job item) => _jobs.Contains(item);
+
+            void ICollection<Job>.CopyTo(Job[] array, int arrayIndex) => _jobs.CopyTo(array, arrayIndex);
+
+            public IEnumerator<Job> GetEnumerator() => _jobs.GetEnumerator();
+
+            public int IndexOf(Job item) => _jobs.IndexOf(item);
+
+            void IList<Job>.Insert(int index, Job item) => throw new NotSupportedException();
+
+            bool ICollection<Job>.Remove(Job item) => throw new NotSupportedException();
+
+            void IList<Job>.RemoveAt(int index) => throw new NotSupportedException();
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+
+            public void Add<T>(ObserverChildJob<T> childJob)
+            {
+                _jobs.Add(childJob);
+            }
+        }
         #endregion
-        #region Private Fields
-        /// <summary>
-        /// Used to lock resources to prevent concurrent operation.
-        /// </summary>
-        private object _syncRoot = new object();
-        /// <summary>
-        /// Queued actions that will start an observer when the current observer completes.
-        /// </summary>
-        private readonly Queue<Action> _startObservers = new Queue<Action>();
-        /// <summary>
-        /// Used to cancel the job.
-        /// </summary>
-        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
-        /// <summary>
-        /// The currently executing observers, excluding the observable generator.
-        /// </summary>
-        private List<object> _observers = new List<object>();
-        /// <summary>
-        /// Indicates whether <see cref="IObserver{T}.OnCompleted"/> has been called by the observable generator.
-        /// </summary>
-        private bool _isGeneratorComplete = true;
-        /// <summary>
-        /// Indicates the order in which observers added to this job will be created.
-        /// </summary>
+
+        #region private fields
+        new private ChildJobList ChildJobs { get => (ChildJobList)base.ChildJobs; }
+        private readonly object _sync;
         private readonly ExecutionMode _executionMode;
-        /// <summary>
-        /// Indicates whether or not an overload of StartJob has been called.
-        /// </summary>
-        private bool _started;
-        /// <summary>
-        /// Indicates whether <see cref="IObserver{T}.OnError(Exception)"/> was called by any observers.
-        /// </summary>
-        private bool _hadErrors;
+        private int _queuedChildJobs;
+        private int _executingChildJobs;
+        private int _completeChildJobs;
+        private int _failedChildJobs;
+        private int _stoppedChildJobs;
+        private bool _isSealed;
         #endregion
-        #region Public Methods
-        /// <summary>
-        /// Stops the executing job and cancels any observers.
-        /// </summary>
-        public override void StopJob()
+        #region public members
+        public event EventHandler<ChildJobStartedEventArgs>? ChildJobStarted;
+        public override void ResumeJob()
+        {
+            SetJobState(JobState.Running);
+            MaybeStartNextJob();
+        }
+        public override void StartJob()
+        {
+            if (State != JobState.NotStarted) throw new InvalidJobStateException(State, "Cannot start job unless the job state is NotStarted.");
+            SetJobState(JobState.Running);
+            MaybeStartNextJob();
+        }
+        public override void StopJob(bool force, string reason)
         {
             SetJobState(JobState.Stopping);
-            _cts.Cancel();
+            ChildJobs.ForEach(i => i.StopJob());
+        }
+        public override void SuspendJob(bool force, string reason)
+        {
+            SetJobState(JobState.Suspending);
+            if (force)
+            {
+                ChildJobs.Where(j => j.JobStateInfo.State == JobState.Running).ToList().ForEach(i => i.StopJob());
+            }
+        }
+        public override void UnblockJob()
+        {
+            throw new PSNotSupportedException();
         }
         #endregion
-        #region Protected Methods
+        #region protected members
         /// <summary>
-        /// Adds an observer to be processed by the job. Note that this method can only be called before
-        /// any overload of <see cref="StartJob"/> is called.
+        /// Indicates that <paramref name="observable"/> should be observed when <see cref="StartJob"/> is executed.
         /// </summary>
-        /// <typeparam name="T">The type output by the observer.</typeparam>
-        /// <param name="observableSource">The publisher to be observed.</param>
-        protected void AddObserver<T>(IObservable<T> observableSource)
+        /// <typeparam name="T"></typeparam>
+        /// <param name="observable"></param>
+        protected void Observe<T>(IObservable<T> observable)
         {
-            lock (_syncRoot)
+            lock (_sync)
             {
-                if (_started)
-                {
-                    throw new InvalidOperationException("Cannot add an observer after the job has been started.");
-                }
-                _startObservers.Enqueue(() =>
-                {
-                    lock (_syncRoot)
-                    {
-                        ActionObserver<T>.Subscribe(
-                                observableSource,
-                                (observer, publisher) => _observers.Add(observer),
-                                OnNextAction,
-                                OnErrorAction,
-                                OnCompletedAction,
-                                OnCanceledAction,
-                                _cts.Token);
-                    }
-                });
+                if (_isSealed) throw new InvalidOperationException("Cannot add observation after the job has been sealed.");
+                var job = GetObserverJob(observable);
+                job.StateChanged += OnChildJobStateChanged;
+                ChildJobs.Add(job);
+                _queuedChildJobs++;
+                MaybeStartNextJob();
             }
         }
         /// <summary>
-        /// Starts the job, executing only the observers that have been queued through the
-        /// <see cref="AddObserver{T}(IObservable{T})"/> method.
+        /// Indicates that <paramref name="observable"/> should be observed when <see cref="StartJob"/> is executed.
         /// </summary>
-        protected void StartJob()
+        /// <typeparam name="T"></typeparam>
+        /// <param name="observable"></param>
+        protected void Observe<T>(IPSObservable<T> observable)
         {
-            lock (_syncRoot)
+            lock (_sync)
             {
-                if (_started) throw new InvalidOperationException("The job has already been started.");
-                _started = true;
-                if (JobStateInfo.State == JobState.NotStarted)
-                {
-                    SetJobState(JobState.Running);
-                }
-                if (_executionMode == ExecutionMode.Concurrent)
-                {
-                    foreach (var observable in _startObservers)
-                    {
-                        observable();
-                    }
-                    _startObservers.Clear();
-                }
-                else
-                {
-                    if (_startObservers.Count > 0)
-                    {
-                        _startObservers.Dequeue()();
-                    }
-                }
-
-                OnCompletedAction<object>(null, null);
+                if (_isSealed) throw new InvalidOperationException("Cannot add observation after the job has been sealed.");
+                var job = GetObserverJob(observable);
+                job.StateChanged += OnChildJobStateChanged;
+                ChildJobs.Add(job);
+                _queuedChildJobs++;
+                MaybeStartNextJob();
             }
         }
-        protected void StartJob<T>(IObservable<IObservable<T>> observableGenerator)
+        /// <summary>
+        /// Creates a new job that observes the <paramref name="observable"/> instance.
+        /// </summary>
+        /// <typeparam name="T">The observed type.</typeparam>
+        /// <param name="observable">The instance to be observed by the job.</param>
+        protected virtual ObserverChildJob<T> GetObserverJob<T>(IObservable<T> observable) => new ObserverChildJob<T>(observable);
+        /// <summary>
+        /// Creates a new job that observes the <paramref name="observable"/> instance.
+        /// </summary>
+        /// <typeparam name="T">The observed type.</typeparam>
+        /// <param name="observable">The instance to be observed by the job.</param>
+        protected virtual ObserverChildJob<T> GetObserverJob<T>(IPSObservable<T> observable) => new ObserverChildJob<T>(observable);
+        /// <summary>
+        /// Indicates that no additional observation will be required, 
+        /// allowing this job to finish.
+        /// </summary>
+        protected void Seal()
         {
-            lock (_syncRoot)
+            lock (_sync)
             {
-                if (_started) throw new InvalidOperationException("The job has already been started.");
-                _started = true;
-                if (JobStateInfo.State == JobState.NotStarted)
+                if (_isSealed) throw new InvalidOperationException("The job has already been sealed.");
+                _isSealed = true;
+                MaybeStartNextJob();
+            }
+        }
+        /// <summary>
+        /// Returns the state that the job should conclude with after processing child jobs has completed.
+        /// By default, <see cref="JobState.Stopped"/> will be returned if the current state is 
+        /// <see cref="JobState.Stopping"/>; <see cref="JobState.Failed"/> will be returned if any child job
+        /// failed and the <see cref="ExecutionMode"/> is <see cref="ExecutionMode.ConsecutiveUntilError"/>;
+        /// otherwise, <see cref="JobState.Completed"/> will be returned.
+        /// </summary>
+        /// <returns>A terminal job state.</returns>
+        protected virtual JobState GetCompletionState()
+        {
+            if (_executionMode == ExecutionMode.ConsecutiveUntilError
+                        && _failedChildJobs > 0)
+            {
+                return JobState.Failed;
+            }
+            else if (State == JobState.Stopping)
+            {
+                return JobState.Stopped;
+            }
+            else
+            {
+                return JobState.Completed;
+            }
+        }
+        #endregion
+        #region private members
+        /// <summary>
+        /// Returns true if the <see cref="ExecutionMode"/> and <see cref="JobState"/> of the current job
+        /// allows a new child job to be started.
+        /// </summary>
+        /// <returns></returns>
+        private bool CanStartNextJob()
+        {
+            // I can't directly check the state of child jobs because they can change while I'm looking at them.
+            // Instead, I'll maintain a numeric record of executing jobs.
+            lock (_sync)
+            {
+                if (State != JobState.Running) return false;
+                switch (_executionMode)
                 {
-                    SetJobState(JobState.Running);
-                }
-                _isGeneratorComplete = false;
-
-                ActionObserver<IObservable<T>>.Subscribe(
-                observableGenerator,
-                onSubscribed: null,
-                onNext: (observer, publisher, newObserver) =>
-                {
-                    lock (_syncRoot)
-                    {
-                        if (_executionMode == ExecutionMode.Concurrent)
+                    case ExecutionMode.Concurrent:
+                        return true;
+                    case ExecutionMode.Consecutive:
                         {
-                            ActionObserver<T>.Subscribe(
-                                newObserver,
-                                (observer, publisher) =>
-                                {
-                                    lock (_syncRoot)
-                                    {
-                                        _observers.Add(observer);
-                                    }
-
-                                },
-                                OnNextAction,
-                                OnErrorAction,
-                                OnCompletedAction,
-                                OnCanceledAction,
-                                _cts.Token);
+                            // return true of no job is currently executing
+                            return _executingChildJobs == 0;
                         }
-                        else
+                    case ExecutionMode.ConsecutiveUntilError:
                         {
-                            _startObservers.Enqueue(() =>
+                            // return true if no job is currently executing, nor has any job failed
+                            return _executingChildJobs == 0
+                                && _failedChildJobs == 0;
+                        }
+                    default:
+                        throw new InvalidOperationException("Could not determine behavior for current execution mode.");
+                }
+            }
+        }
+        private void MaybeStartNextJob()
+        {
+            lock (_sync)
+            {
+                if (_executionMode == ExecutionMode.ConsecutiveUntilError
+                    && _failedChildJobs > 0)
+                {
+                    ChildJobs.ForEach(j =>
+                    {
+                        if (j.JobStateInfo.State == JobState.NotStarted)
+                        {
+                            j.StopJob();
+                        }
+                    });
+                    MaybeFinishJob();
+                }
+
+                dynamic job = ChildJobs.Where(j => j.JobStateInfo.State == JobState.NotStarted).FirstOrDefault();
+                if (job is null || !CanStartNextJob())
+                {
+                    MaybeFinishJob();
+                    return;
+                }
+                _executingChildJobs++;
+                _queuedChildJobs--;
+                job.StartJob();
+                ChildJobStarted?.Invoke(this, new ChildJobStartedEventArgs(job));
+            }
+        }
+        private void MaybeFinishJob()
+        {
+            lock(_sync)
+            {
+                if (_isSealed
+                    && _executingChildJobs == 0
+                    && _queuedChildJobs == 0)
+                {
+                    SetJobState(GetCompletionState());
+                }
+            }
+        }
+        private void OnChildJobStateChanged(object sender, JobStateEventArgs e)
+        {
+            if (sender is null) return;
+            lock (_sync)
+            {
+                switch (e.JobStateInfo.State)
+                {
+                    case JobState.Completed:
+                        {
+                            if (e.PreviousJobStateInfo.State == JobState.Running)
                             {
-                                lock (_syncRoot)
-                                {
-                                    ActionObserver<T>.Subscribe(
-                                        newObserver,
-                                        (observer, publisher) =>
-                                        {
-                                            lock(_syncRoot)
-                                            {
-                                                _observers.Add(observer);
-                                            }
-                                        },
-                                        OnNextAction,
-                                        OnErrorAction,
-                                        OnCompletedAction,
-                                        OnCanceledAction,
-                                        _cts.Token);
-                                }
-                            });
+                                _completeChildJobs++;
+                                _executingChildJobs--;
+                            }
                         }
-                    }
-                },
-                onError: (receiver, sender, error) =>
-                {
-                    lock (_syncRoot)
-                    {
-                        _isGeneratorComplete = true;
-                        OnErrorAction(receiver, sender, error);
-                    }
-                },
-                onCompleted: (receiver, sender) =>
-                {
-                    lock (_syncRoot)
-                    {
-                        _isGeneratorComplete = true;
-                        OnCompletedAction(receiver, sender);
-                    }
-                },
-                onCanceled: (receiver, sender) =>
-                {
-                    lock (_syncRoot)
-                    {
-                        _isGeneratorComplete = true;
-                        OnCanceledAction(receiver, sender);
-                    }
-                },
-                _cts.Token
-                );
+                        break;
+                    case JobState.Failed:
+                        {
+                            if (e.PreviousJobStateInfo.State == JobState.Running)
+                            {
+                                _failedChildJobs++;
+                                _executingChildJobs--;
+                            }
+                        }
+                        break;
+                    case JobState.Stopped:
+                        {
+                            if (e.PreviousJobStateInfo.State == JobState.Running)
+                            {
+                                _stoppedChildJobs++;
+                                _executingChildJobs--;
+                            }
+                            else if (e.PreviousJobStateInfo.State == JobState.NotStarted)
+                            {
+                                _queuedChildJobs--;
+                                _stoppedChildJobs++;
+                            }
+                        }
+                        break;
+                }
+
+                if (State == JobState.Suspending) SetJobState(JobState.Suspended);
+                else MaybeStartNextJob();
             }
         }
         #endregion
-        #region Private Methods
-        private void OnNextAction<T>(IObserver<T> observer, IObservable<T> publisher, T item)
+        #region Constructors
+        protected ObserverJob(string? command, string? name, ExecutionMode executionMode)
+            : base(command, name, new ChildJobList())
         {
-            Output.Add(PSObject.AsPSObject(item));
+            _sync = new object();
+            _executionMode = executionMode;
         }
-        private void OnErrorAction<T>(IObserver<T> observer, IObservable<T> publisher, Exception error)
+
+        public static ObserverJob Create<T>(IObservable<IObservable<T>> observableGenerator, ExecutionMode executionMode = ExecutionMode.Concurrent, string? command = null, string? name = null)
+            => new GeneratedObserverJob<T>(command, name, executionMode, observableGenerator);
+        public static ObserverJob Create<T>(IObservable<IPSObservable<T>> observableGenerator, ExecutionMode executionMode = ExecutionMode.Concurrent, string? command = null, string? name = null)
+            => new GeneratedObserverJob<T>(command, name, executionMode, observableGenerator);
+        public static ObserverJob Create<T>(IEnumerable<IObservable<T>> observables, ExecutionMode executionMode = ExecutionMode.Concurrent, string? command = null, string? name = null)
         {
-            lock (_syncRoot)
+            var job = new ObserverJob(command, name, executionMode);
+            foreach (var observable in observables)
             {
-                _hadErrors = true;
-                Error.Add(new ErrorRecord(
-                    error,
-                    "ObservedError",
-                    ErrorCategory.NotSpecified,
-                    publisher
-                    ));
-
-                OnCompletedAction(observer, publisher);
+                job.Observe(observable);
             }
-        }
-        private void OnCompletedAction<T>(IObserver<T>? observer, IObservable<T>? publisher)
-        {
-            lock (_syncRoot)
-            {
-                if (observer != null && publisher != null)
-                {
-                    if (_observers.Contains(observer))
-                    {
-                        _observers.Remove(observer);
-                    }
-                }
-                if (!_started)
-                {
-                    return;
-                }
-                if (_executionMode == ExecutionMode.ConsecutiveUntilError && _hadErrors)
-                {
-                    _cts.Cancel();
-                    _observers.Clear();
-                    _startObservers.Clear();
-
-                    SetJobState(JobState.Failed);
-                    return;
-                }
-                if (_observers.Count == 0 && _startObservers.Count > 0)
-                {
-                    _startObservers.Dequeue()();
-                    return;
-                }
-                if (!_isGeneratorComplete || !_started)
-                {
-                    return;
-                }
-                if (_observers.Count == 0)
-                {
-                    if (JobStateInfo.State == JobState.Stopping)
-                    {
-                        SetJobState(JobState.Stopped);
-                    }
-                    else
-                    {
-                        SetJobState(JobState.Completed);
-                    }
-                }
-            }
-        }
-        private void OnCanceledAction<T>(IObserver<T> receiver, IObservable<T> sender)
-            => OnCompletedAction(receiver, sender);
-        #endregion
-    }
-
-
-    /// <summary>
-    /// PowerShell <see cref="Job"/> implementation of <see cref="IObserver{T}"/>, allowing a job
-    /// to subscribe to any <see cref="IObservable{T}"/> publisher.
-    /// </summary>
-    /// <typeparam name="T">The observed item type.</typeparam>
-    public sealed class ObserverJob<T> : ObserverJob
-    {
-        private ObserverJob(ExecutionMode executionMode, string? command, string? name)
-            : base(executionMode, command, name)
-        {
-        }
-        internal static ObserverJob<T> StartJob(string? command, string? name, ExecutionMode executionMode, IEnumerable<IObservable<T>> observableSources)
-        {
-            var job = new ObserverJob<T>(executionMode, command, name);
-            foreach (var source in observableSources)
-            {
-                job.AddObserver(source);
-            }
-            job.StartJob();
+            job.Seal();
             return job;
         }
+        public static ObserverJob Create<T>(ExecutionMode executionMode = ExecutionMode.Concurrent, string? command = null, string? name = null, params IObservable<T>[] observables)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            foreach (var observable in observables)
+            {
+                job.Observe(observable);
+            }
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T>(IObservable<T> observable, string? command = null, string? name = null)
+        {
+            var job = new ObserverJob(command, name, ExecutionMode.Concurrent);
+            job.Observe(observable);
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T1, T2>(IObservable<T1> p1,
+                                                  IObservable<T2> p2,
+                                                  ExecutionMode executionMode = ExecutionMode.Concurrent,
+                                                  string? command = null,
+                                                  string? name = null)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            job.Observe(p1);
+            job.Observe(p2);
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T1, T2, T3>(IObservable<T1> p1,
+                                                      IObservable<T2> p2,
+                                                      IObservable<T3> p3,
+                                                      ExecutionMode executionMode = ExecutionMode.Concurrent,
+                                                      string? command = null,
+                                                      string? name = null)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            job.Observe(p1);
+            job.Observe(p2);
+            job.Observe(p3);
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T1, T2, T3, T4>(IObservable<T1> p1,
+                                                          IObservable<T2> p2,
+                                                          IObservable<T3> p3,
+                                                          IObservable<T4> p4,
+                                                          ExecutionMode executionMode = ExecutionMode.Concurrent,
+                                                          string? command = null,
+                                                          string? name = null)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            job.Observe(p1);
+            job.Observe(p2);
+            job.Observe(p3);
+            job.Observe(p4);
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T1, T2, T3, T4, T5>(IObservable<T1> p1,
+                                                              IObservable<T2> p2,
+                                                              IObservable<T3> p3,
+                                                              IObservable<T4> p4,
+                                                              IObservable<T5> p5,
+                                                              ExecutionMode executionMode = ExecutionMode.Concurrent,
+                                                              string? command = null,
+                                                              string? name = null)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            job.Observe(p1);
+            job.Observe(p2);
+            job.Observe(p3);
+            job.Observe(p4);
+            job.Observe(p5);
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T1, T2, T3, T4, T5, T6>(IObservable<T1> p1,
+                                                                  IObservable<T2> p2,
+                                                                  IObservable<T3> p3,
+                                                                  IObservable<T4> p4,
+                                                                  IObservable<T5> p5,
+                                                                  IObservable<T6> p6,
+                                                                  ExecutionMode executionMode = ExecutionMode.Concurrent,
+                                                                  string? command = null,
+                                                                  string? name = null)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            job.Observe(p1);
+            job.Observe(p2);
+            job.Observe(p3);
+            job.Observe(p4);
+            job.Observe(p5);
+            job.Observe(p6);
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T1, T2, T3, T4, T5, T6, T7>(IObservable<T1> p1,
+                                                                      IObservable<T2> p2,
+                                                                      IObservable<T3> p3,
+                                                                      IObservable<T4> p4,
+                                                                      IObservable<T5> p5,
+                                                                      IObservable<T6> p6,
+                                                                      IObservable<T7> p7,
+                                                                      ExecutionMode executionMode = ExecutionMode.Concurrent,
+                                                                      string? command = null,
+                                                                      string? name = null)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            job.Observe(p1);
+            job.Observe(p2);
+            job.Observe(p3);
+            job.Observe(p4);
+            job.Observe(p5);
+            job.Observe(p6);
+            job.Observe(p7);
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T1, T2, T3, T4, T5, T6, T7, T8>(IObservable<T1> p1,
+                                                                          IObservable<T2> p2,
+                                                                          IObservable<T3> p3,
+                                                                          IObservable<T4> p4,
+                                                                          IObservable<T5> p5,
+                                                                          IObservable<T6> p6,
+                                                                          IObservable<T7> p7,
+                                                                          IObservable<T8> p8,
+                                                                          ExecutionMode executionMode = ExecutionMode.Concurrent,
+                                                                          string? command = null,
+                                                                          string? name = null)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            job.Observe(p1);
+            job.Observe(p2);
+            job.Observe(p3);
+            job.Observe(p4);
+            job.Observe(p5);
+            job.Observe(p6);
+            job.Observe(p7);
+            job.Observe(p8);
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T1, T2, T3, T4, T5, T6, T7, T8, T9>(IObservable<T1> p1,
+                                                                              IObservable<T2> p2,
+                                                                              IObservable<T3> p3,
+                                                                              IObservable<T4> p4,
+                                                                              IObservable<T5> p5,
+                                                                              IObservable<T6> p6,
+                                                                              IObservable<T7> p7,
+                                                                              IObservable<T8> p8,
+                                                                              IObservable<T9> p9,
+                                                                              ExecutionMode executionMode = ExecutionMode.Concurrent,
+                                                                              string? command = null,
+                                                                              string? name = null)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            job.Observe(p1);
+            job.Observe(p2);
+            job.Observe(p3);
+            job.Observe(p4);
+            job.Observe(p5);
+            job.Observe(p6);
+            job.Observe(p7);
+            job.Observe(p8);
+            job.Observe(p9);
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(IObservable<T1> p1,
+                                                                                   IObservable<T2> p2,
+                                                                                   IObservable<T3> p3,
+                                                                                   IObservable<T4> p4,
+                                                                                   IObservable<T5> p5,
+                                                                                   IObservable<T6> p6,
+                                                                                   IObservable<T7> p7,
+                                                                                   IObservable<T8> p8,
+                                                                                   IObservable<T9> p9,
+                                                                                   IObservable<T10> p10,
+                                                                                   ExecutionMode executionMode = ExecutionMode.Concurrent,
+                                                                                   string? command = null,
+                                                                                   string? name = null)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            job.Observe(p1);
+            job.Observe(p2);
+            job.Observe(p3);
+            job.Observe(p4);
+            job.Observe(p5);
+            job.Observe(p6);
+            job.Observe(p7);
+            job.Observe(p8);
+            job.Observe(p9);
+            job.Observe(p10);
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T>(IEnumerable<IPSObservable<T>> observables, ExecutionMode executionMode = ExecutionMode.Concurrent, string? command = null, string? name = null)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            foreach (var observable in observables)
+            {
+                job.Observe(observable);
+            }
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T>(ExecutionMode executionMode = ExecutionMode.Concurrent, string? command = null, string? name = null, params IPSObservable<T>[] observables)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            foreach (var observable in observables)
+            {
+                job.Observe(observable);
+            }
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T>(IPSObservable<T> observable, string? command = null, string? name = null)
+        {
+            var job = new ObserverJob(command, name, ExecutionMode.Concurrent);
+            job.Observe(observable);
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T1, T2>(IPSObservable<T1> p1,
+                                                  IPSObservable<T2> p2,
+                                                  ExecutionMode executionMode = ExecutionMode.Concurrent,
+                                                  string? command = null,
+                                                  string? name = null)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            job.Observe(p1);
+            job.Observe(p2);
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T1, T2, T3>(IPSObservable<T1> p1,
+                                                      IPSObservable<T2> p2,
+                                                      IPSObservable<T3> p3,
+                                                      ExecutionMode executionMode = ExecutionMode.Concurrent,
+                                                      string? command = null,
+                                                      string? name = null)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            job.Observe(p1);
+            job.Observe(p2);
+            job.Observe(p3);
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T1, T2, T3, T4>(IPSObservable<T1> p1,
+                                                          IPSObservable<T2> p2,
+                                                          IPSObservable<T3> p3,
+                                                          IPSObservable<T4> p4,
+                                                          ExecutionMode executionMode = ExecutionMode.Concurrent,
+                                                          string? command = null,
+                                                          string? name = null)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            job.Observe(p1);
+            job.Observe(p2);
+            job.Observe(p3);
+            job.Observe(p4);
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T1, T2, T3, T4, T5>(IPSObservable<T1> p1,
+                                                              IPSObservable<T2> p2,
+                                                              IPSObservable<T3> p3,
+                                                              IPSObservable<T4> p4,
+                                                              IPSObservable<T5> p5,
+                                                              ExecutionMode executionMode = ExecutionMode.Concurrent,
+                                                              string? command = null,
+                                                              string? name = null)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            job.Observe(p1);
+            job.Observe(p2);
+            job.Observe(p3);
+            job.Observe(p4);
+            job.Observe(p5);
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T1, T2, T3, T4, T5, T6>(IPSObservable<T1> p1,
+                                                                  IPSObservable<T2> p2,
+                                                                  IPSObservable<T3> p3,
+                                                                  IPSObservable<T4> p4,
+                                                                  IPSObservable<T5> p5,
+                                                                  IPSObservable<T6> p6,
+                                                                  ExecutionMode executionMode = ExecutionMode.Concurrent,
+                                                                  string? command = null,
+                                                                  string? name = null)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            job.Observe(p1);
+            job.Observe(p2);
+            job.Observe(p3);
+            job.Observe(p4);
+            job.Observe(p5);
+            job.Observe(p6);
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T1, T2, T3, T4, T5, T6, T7>(IPSObservable<T1> p1,
+                                                                      IPSObservable<T2> p2,
+                                                                      IPSObservable<T3> p3,
+                                                                      IPSObservable<T4> p4,
+                                                                      IPSObservable<T5> p5,
+                                                                      IPSObservable<T6> p6,
+                                                                      IPSObservable<T7> p7,
+                                                                      ExecutionMode executionMode = ExecutionMode.Concurrent,
+                                                                      string? command = null,
+                                                                      string? name = null)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            job.Observe(p1);
+            job.Observe(p2);
+            job.Observe(p3);
+            job.Observe(p4);
+            job.Observe(p5);
+            job.Observe(p6);
+            job.Observe(p7);
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T1, T2, T3, T4, T5, T6, T7, T8>(IPSObservable<T1> p1,
+                                                                          IPSObservable<T2> p2,
+                                                                          IPSObservable<T3> p3,
+                                                                          IPSObservable<T4> p4,
+                                                                          IPSObservable<T5> p5,
+                                                                          IPSObservable<T6> p6,
+                                                                          IPSObservable<T7> p7,
+                                                                          IPSObservable<T8> p8,
+                                                                          ExecutionMode executionMode = ExecutionMode.Concurrent,
+                                                                          string? command = null,
+                                                                          string? name = null)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            job.Observe(p1);
+            job.Observe(p2);
+            job.Observe(p3);
+            job.Observe(p4);
+            job.Observe(p5);
+            job.Observe(p6);
+            job.Observe(p7);
+            job.Observe(p8);
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T1, T2, T3, T4, T5, T6, T7, T8, T9>(IPSObservable<T1> p1,
+                                                                              IPSObservable<T2> p2,
+                                                                              IPSObservable<T3> p3,
+                                                                              IPSObservable<T4> p4,
+                                                                              IPSObservable<T5> p5,
+                                                                              IPSObservable<T6> p6,
+                                                                              IPSObservable<T7> p7,
+                                                                              IPSObservable<T8> p8,
+                                                                              IPSObservable<T9> p9,
+                                                                              ExecutionMode executionMode = ExecutionMode.Concurrent,
+                                                                              string? command = null,
+                                                                              string? name = null)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            job.Observe(p1);
+            job.Observe(p2);
+            job.Observe(p3);
+            job.Observe(p4);
+            job.Observe(p5);
+            job.Observe(p6);
+            job.Observe(p7);
+            job.Observe(p8);
+            job.Observe(p9);
+            job.Seal();
+            return job;
+        }
+        public static ObserverJob Create<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(IPSObservable<T1> p1,
+                                                                                   IPSObservable<T2> p2,
+                                                                                   IPSObservable<T3> p3,
+                                                                                   IPSObservable<T4> p4,
+                                                                                   IPSObservable<T5> p5,
+                                                                                   IPSObservable<T6> p6,
+                                                                                   IPSObservable<T7> p7,
+                                                                                   IPSObservable<T8> p8,
+                                                                                   IPSObservable<T9> p9,
+                                                                                   IPSObservable<T10> p10,
+                                                                                   ExecutionMode executionMode = ExecutionMode.Concurrent,
+                                                                                   string? command = null,
+                                                                                   string? name = null)
+        {
+            var job = new ObserverJob(command, name, executionMode);
+            job.Observe(p1);
+            job.Observe(p2);
+            job.Observe(p3);
+            job.Observe(p4);
+            job.Observe(p5);
+            job.Observe(p6);
+            job.Observe(p7);
+            job.Observe(p8);
+            job.Observe(p9);
+            job.Observe(p10);
+            job.Seal();
+            return job;
+        }
+        #endregion Constructors
     }
 }

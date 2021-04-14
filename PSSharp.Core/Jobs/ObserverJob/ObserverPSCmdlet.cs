@@ -68,7 +68,7 @@ namespace PSSharp.Commands
             WriteObserverContents(false);
             if (AsJob && OutputJobForEachObservable)
             {
-                var job = ObserverJob.StartJob(JobCommand, JobName, source);
+                var job = ObserverJob.Create(source, JobCommand, JobName);
                 JobRepository.Add(job);
                 WriteObject(job);
                 return;
@@ -80,7 +80,7 @@ namespace PSSharp.Commands
 
             if (AsJob)
             {
-                _job ??= ObserverJob.StartJob(JobCommand, JobName, ExecutionMode.Concurrent, _generator);
+                _job ??= ObserverJob.Create(_generator, ExecutionMode.Concurrent, JobCommand, JobName);
             }
             else
             {

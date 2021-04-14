@@ -547,11 +547,13 @@ namespace PSSharp
             }
             catch { }
         }
-        public static bool operator ==(AdvancedJobBase left, Job right)
+        public static bool operator ==(AdvancedJobBase? left, Job? right)
         {
-            return left.InstanceId == right.InstanceId;
+            return !(left is null) 
+                && !(right is null) 
+                && left.InstanceId == right.InstanceId;
         }
-        public static bool operator !=(AdvancedJobBase left, Job right)
+        public static bool operator !=(AdvancedJobBase? left, Job? right)
         {
             return !(left == right);
         }
