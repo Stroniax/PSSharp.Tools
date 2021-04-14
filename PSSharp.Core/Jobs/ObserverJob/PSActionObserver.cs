@@ -5,15 +5,36 @@ namespace PSSharp
 {
     internal class PSActionObserver<T> : IPSObserver<T>
     {
-        private Action<PSActionObserver<T>, T>? _onOutput;
-        private Action<PSActionObserver<T>>? _onCompleted;
-        private Action<PSActionObserver<T>, ErrorRecord>? _onFailed;
-        private Action<PSActionObserver<T>, string>? _onDebug;
-        private Action<PSActionObserver<T>, string>? _onWarning;
-        private Action<PSActionObserver<T>, string>? _onVerbose;
-        private Action<PSActionObserver<T>, ErrorRecord>? _onError;
-        private Action<PSActionObserver<T>, InformationRecord>? _onInformation;
-        private Action<PSActionObserver<T>, ProgressRecord>? _onProgress;
+        private readonly Action<PSActionObserver<T>, T>? _onOutput;
+        private readonly Action<PSActionObserver<T>>? _onCompleted;
+        private readonly Action<PSActionObserver<T>, ErrorRecord>? _onFailed;
+        private readonly Action<PSActionObserver<T>, string>? _onDebug;
+        private readonly Action<PSActionObserver<T>, string>? _onWarning;
+        private readonly Action<PSActionObserver<T>, string>? _onVerbose;
+        private readonly Action<PSActionObserver<T>, ErrorRecord>? _onError;
+        private readonly Action<PSActionObserver<T>, InformationRecord>? _onInformation;
+        private readonly Action<PSActionObserver<T>, ProgressRecord>? _onProgress;
+
+        public PSActionObserver(Action<PSActionObserver<T>, T>? onOutput,
+                                Action<PSActionObserver<T>>? onCompleted,
+                                Action<PSActionObserver<T>, ErrorRecord>? onFailed,
+                                Action<PSActionObserver<T>, string>? onDebug,
+                                Action<PSActionObserver<T>, string>? onWarning,
+                                Action<PSActionObserver<T>, string>? onVerbose,
+                                Action<PSActionObserver<T>, ErrorRecord>? onError,
+                                Action<PSActionObserver<T>, InformationRecord>? onInformation,
+                                Action<PSActionObserver<T>, ProgressRecord>? onProgress)
+        {
+            _onOutput = onOutput;
+            _onCompleted = onCompleted;
+            _onFailed = onFailed;
+            _onDebug = onDebug;
+            _onWarning = onWarning;
+            _onVerbose = onVerbose;
+            _onError = onError;
+            _onInformation = onInformation;
+            _onProgress = onProgress;
+        }
 
         public void OnCompleted() => _onCompleted?.Invoke(this);
         public void OnFailed(ErrorRecord error) => _onFailed?.Invoke(this, error);
