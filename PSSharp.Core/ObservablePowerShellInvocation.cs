@@ -143,6 +143,7 @@ namespace PSSharp
                         {
                             foreach (var observer in _observers)
                             {
+                                _isCompleted = true;
                                 observer.OnCompleted();
                             }
                             foreach (var observer in _psObservers)
@@ -153,6 +154,7 @@ namespace PSSharp
                         break;
                     case PSInvocationState.Disconnected:
                         {
+                                _isCompleted = true;
                             var ex = new PSTerminalStateException(PSInvocationState.Disconnected, "The PowerShell invocation state indicated disconnection.", args.InvocationStateInfo.Reason);
                             var er = new ErrorRecord(ex, "PSTerminalState", ErrorCategory.NotSpecified, _powerShell);
                             foreach (var observer in _observers)
@@ -167,6 +169,7 @@ namespace PSSharp
                         break;
                     case PSInvocationState.Failed:
                         {
+                                _isCompleted = true;
                             var ex = new PSTerminalStateException(PSInvocationState.Failed, "The PowerShell invocation state indicated failure.", args.InvocationStateInfo.Reason);
                             var er = new ErrorRecord(ex, "PSTerminalState", ErrorCategory.NotSpecified, _powerShell);
                             _exception = ex;
@@ -182,6 +185,7 @@ namespace PSSharp
                         break;
                     case PSInvocationState.Stopped:
                         {
+                                _isCompleted = true;
                             var ex = new PSTerminalStateException(PSInvocationState.Stopped, "The PowerShell invocation state indicated cancellation.", args.InvocationStateInfo.Reason);
                             var er = new ErrorRecord(ex, "PSTerminalState", ErrorCategory.NotSpecified, _powerShell);
                             _exception = ex;
@@ -304,7 +308,7 @@ namespace PSSharp
                 {
                     var terminal = _powerShell.Streams.Error.Where(e => e.Exception == _exception).FirstOrDefault()
                         ?? new ErrorRecord(_exception, "PowerShellError", ErrorCategory.NotSpecified, _powerShell);
-                    observer.OnError(terminal);
+                    observer.OnFailed(terminal);
                     return ActionRegistration.None;
                 }
                 if (_isCompleted)
