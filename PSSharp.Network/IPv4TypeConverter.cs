@@ -13,6 +13,7 @@ namespace PSSharp
     public class IPv4TypeConverter : PSTypeConverter
     {
         #region PSTypeConverter
+        /// <inheritdoc/>
         public override bool CanConvertFrom(object sourceValue, Type destinationType)
         {
             if (sourceValue is double dbl && destinationType == typeof(IPAddress))
@@ -32,6 +33,7 @@ namespace PSSharp
             return false;
         }
 
+        /// <inheritdoc/>
         public override bool CanConvertTo(object sourceValue, Type destinationType)
         {
 
@@ -45,6 +47,7 @@ namespace PSSharp
             return false;
         }
 
+        /// <inheritdoc/>
         public override object ConvertFrom(object sourceValue, Type destinationType, IFormatProvider formatProvider, bool ignoreCase)
         {
             if (sourceValue is double dbl && destinationType == typeof(IPAddress))
@@ -61,6 +64,7 @@ namespace PSSharp
             }
         }
 
+        /// <inheritdoc/>
         public override object ConvertTo(object sourceValue, Type destinationType, IFormatProvider formatProvider, bool ignoreCase)
         {
             if (sourceValue is IPAddress ip && (destinationType == typeof(double) || destinationType == typeof(long))
@@ -76,6 +80,14 @@ namespace PSSharp
         #endregion
 
         #region Code Methods/Properties
+        /// <summary>
+        /// Retrieves a string with the binary representation of an IP address. 
+        /// If the address is an IPv4 address, the values will be separated by decimals
+        /// between each octet (every 8 bits).
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [PSCodePropertyDefinition(typeof(IPAddress), PropertyName = "AddressBinaryString")]
         public static string GetBinaryAddressString(PSObject obj)
         {
             if (obj.BaseObject is IPAddress address)
@@ -94,6 +106,11 @@ namespace PSSharp
             throw new ArgumentException();
         }
         #endregion
+        /// <summary>
+        /// Converts an IPv4 address to its numeric representation.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public static long ConvertIPv4ToNumber(IPAddress input)
         {
             long address = 0;
@@ -106,6 +123,11 @@ namespace PSSharp
             }
             return address;
         }
+        /// <summary>
+        /// Converts a numeric representation of an IPv4 address to the associated <see cref="IPAddress"/> value.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public static IPAddress ConvertNumberToIPv4(long input)
         {
             var octets = new byte[4];
@@ -115,6 +137,11 @@ namespace PSSharp
             octets[3] = (byte)Math.Truncate((double)input % 256);
             return new IPAddress(octets);
         }
+        /// <summary>
+        /// Converts a CIDR integer into the associated subnet mask.
+        /// </summary>
+        /// <param name="cidr"></param>
+        /// <returns></returns>
         public static IPAddress ConvertCidrToSubnetMask(int cidr)
         {
             if (cidr > 32)
@@ -131,6 +158,11 @@ namespace PSSharp
             long maskInt = Convert.ToInt64(bitValueString, 2);
             return ConvertNumberToIPv4(maskInt);
         }
+        /// <summary>
+        /// Converts a subnet mask into the associated numeric CIDR value.
+        /// </summary>
+        /// <param name="subnetMask"></param>
+        /// <returns></returns>
         public static int ConvertSubnetMaskToCidr(IPAddress subnetMask)
         {
             string subnetMaskBinaryString = Convert.ToString(ConvertIPv4ToNumber(subnetMask), 2);

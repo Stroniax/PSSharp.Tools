@@ -1,0 +1,346 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PSSharp.ScriptAnalyzerRules</name>
+    </assembly>
+    <members>
+        <member name="T:PSSharp.ScriptAnalyzerRules.AvoidThrowStatement">
+            <summary>
+            Fails if the throw statement exists within a function.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.AvoidThrowStatement.Predicate(System.Management.Automation.Language.ThrowStatementAst)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.UseCamelCaseForVariable">
+            <summary>
+            Fails if a variable within a function begins with a capital letter, unless that variable
+            is a parameter of the function.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UseCamelCaseForVariable.ProcessRecord">
+            <inheritdoc/>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UseCamelCaseForVariable.Predicate(System.Management.Automation.Language.Ast)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.UsePascalCaseForParameter">
+            <summary>
+            Fails if a parameter begins with a lower case letter.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UsePascalCaseForParameter.Predicate(System.Management.Automation.Language.ParameterAst)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.AvoidNumberInVariableName">
+            <summary>
+            Fails if a variable's name contains a number.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.AvoidNumberInVariableName.Predicate(System.Management.Automation.Language.VariableExpressionAst)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.AvoidNumberInFunctionName">
+            <summary>
+            Fails if a function's name contains a number.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.AvoidNumberInFunctionName.Predicate(System.Management.Automation.Language.FunctionDefinitionAst)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.UseParameterSplatting">
+            <summary>
+            Fails if more than 7 parameter elements are provided for a command invocation.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UseParameterSplatting.Predicate(System.Management.Automation.Language.CommandAst)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.UsePositionalParameter">
+            <summary>
+            Fails if the first <see cref="P:System.Management.Automation.Language.CommandAst.CommandElements"/> is not a <see cref="T:System.Management.Automation.Language.CommandParameterAst"/>.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UsePositionalParameter.Predicate(System.Management.Automation.Language.CommandAst)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.UseConsistentVariableCase">
+            <summary>
+            Fails for variables with casing that does not match the case of the variable's
+            initial definition.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UseConsistentVariableCase.ProcessRecord">
+            <inheritdoc/>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UseConsistentVariableCase.Predicate(System.Management.Automation.Language.ScriptBlockAst)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.UseHereStringForMultiline">
+            <summary>
+            Fails if the <see cref="T:System.Management.Automation.Language.ExpressionAst"/> is a multi-line stirng that is not
+            a here-string.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UseHereStringForMultiline.Predicate(System.Management.Automation.Language.ExpressionAst)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.UseSingleQuotedStringWhenNotInterpolated">
+            <summary>
+            Fails if the string is a double-quoted or not quoted, and does not contain
+            special characters or expandable expressions.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UseSingleQuotedStringWhenNotInterpolated.Predicate(System.Management.Automation.Language.StringConstantExpressionAst)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.AvoidUsingUndefinedVariable">
+            <summary>
+            Fails for any <see cref="T:System.Management.Automation.Language.VariableExpressionAst"/> that is not within a 
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.AvoidUsingUndefinedVariable.ProcessRecord">
+            <inheritdoc/>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.AvoidUsingUndefinedVariable.Predicate(System.Management.Automation.Language.ScriptBlockAst)">
+            <inheritdoc/>
+        </member>
+        <member name="P:PSSharp.ScriptAnalyzerRules.AvoidUsingUndefinedVariable.Severity">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.UseVariableTypeConstraint">
+            <summary>
+            Fails for any variable assignment that is not explicitly typed.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UseVariableTypeConstraint.ProcessRecord">
+            <inheritdoc/>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UseVariableTypeConstraint.Predicate(System.Management.Automation.Language.ScriptBlockAst)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.AvoidUnnamedFunctionBlock">
+            <summary>
+            Fails if the <see cref="T:System.Management.Automation.Language.NamedBlockAst"/> of the <see cref="T:System.Management.Automation.Language.FunctionDefinitionAst"/> is unnamed.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.AvoidUnnamedFunctionBlock.Predicate(System.Management.Automation.Language.FunctionDefinitionAst)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.UseOutputTypeAttribute">
+            <summary>
+            Fails if the function does not define the <see cref="T:System.Management.Automation.OutputTypeAttribute"/>.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UseOutputTypeAttribute.Predicate(System.Management.Automation.Language.FunctionDefinitionAst)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.AvoidWriteOutput">
+            <summary>
+            Fails is the command is Write-Output.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.AvoidWriteOutput.Predicate(System.Management.Automation.Language.CommandAst)">
+            <inheritdoc/>
+        </member>
+        <member name="P:PSSharp.ScriptAnalyzerRules.AvoidWriteOutput.Severity">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.AvoidWriteHost">
+            <summary>
+            Fails if the command is Write-Host.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.AvoidWriteHost.Predicate(System.Management.Automation.Language.CommandAst)">
+            <inheritdoc/>
+        </member>
+        <member name="P:PSSharp.ScriptAnalyzerRules.AvoidWriteHost.Severity">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.AvoidWriteError">
+            <summary>
+            Fails if the command is Write-Error.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.AvoidWriteError.Predicate(System.Management.Automation.Language.CommandAst)">
+            <inheritdoc/>
+        </member>
+        <member name="P:PSSharp.ScriptAnalyzerRules.AvoidWriteError.Severity">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.UsePSStreams">
+            <summary>
+            Fails if the function does not use Write-Verbose, Write-Information, or Write-Debug.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UsePSStreams.Predicate(System.Management.Automation.Language.FunctionDefinitionAst)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.UseDefaultParameterSet">
+            <summary>
+            Fails if the param block does not define 
+            <see cref="P:System.Management.Automation.CmdletCommonMetadataAttribute.DefaultParameterSetName"/> if a parameter does define
+            <see cref="P:System.Management.Automation.ParameterAttribute.ParameterSetName"/>.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UseDefaultParameterSet.Predicate(System.Management.Automation.Language.ParamBlockAst)">
+            <inheritdoc/>
+        </member>
+        <member name="P:PSSharp.ScriptAnalyzerRules.UseDefaultParameterSet.Severity">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.UseSupportsShouldProcess">
+            <summary>
+            Fails if the function calls $PSCmdlet.ShouldProcess or $PSCmdlet.ShouldContinue
+            without defining <see cref="P:System.Management.Automation.CmdletCommonMetadataAttribute.SupportsShouldProcess"/>.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UseSupportsShouldProcess.ProcessRecord">
+            <inheritdoc/>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UseSupportsShouldProcess.Predicate(System.Management.Automation.Language.FunctionDefinitionAst)">
+            <inheritdoc/>
+        </member>
+        <member name="P:PSSharp.ScriptAnalyzerRules.UseSupportsShouldProcess.Severity">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.UsePSBoundParameters">
+            <summary>
+            Fails if $MyInvocation.BoundParameters is called instead of $PSBoundParameters.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UsePSBoundParameters.Predicate(System.Management.Automation.Language.MemberExpressionAst)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.UseReturnForControlFlow">
+            <summary>
+            Fails if the return statement is followed by a value to be returned.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UseReturnForControlFlow.Predicate(System.Management.Automation.Language.ReturnStatementAst)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.UseParameterTypeConstraint">
+            <summary>
+            Fails if a parameter is not explicitly constrainted to a type.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UseParameterTypeConstraint.Predicate(System.Management.Automation.Language.ParameterAst)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.UseParameterArgumentCompleter">
+            <summary>
+            Fails if no argument completer attribute is assigned to the parameter and the
+            parameter name does not end with the text "Path".
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UseParameterArgumentCompleter.Predicate(System.Management.Automation.Language.ParameterAst)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.UsePSDefaultValueAttribute">
+            <summary>
+            Fails if the parameter has a default value assigned but no <see cref="T:System.Management.Automation.PSDefaultValueAttribute"/>.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UsePSDefaultValueAttribute.Predicate(System.Management.Automation.Language.ParameterAst)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.UsePipelineInput">
+            <summary>
+            Fails if no parameters accept pipeline input, unless the ParamBlock contains 
+            an attribute of type PSSharp.NoPipelineInputAttribute.
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.UsePipelineInput.Predicate(System.Management.Automation.Language.ParamBlockAst)">
+            <inheritdoc/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.ScriptAnalyzerCommand">
+            <summary>
+            <para type='synopsis'>Performs a test against an 
+            <see cref="T:System.Management.Automation.Language.Ast"/> for the PSScriptAnalyzer.</para>
+            </summary>
+        </member>
+        <member name="P:PSSharp.ScriptAnalyzerRules.ScriptAnalyzerCommand.Ast">
+            <summary>
+            <para type='description'>The Abstract Syntax Tree instance to be tested.</para>
+            </summary>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.ScriptAnalyzerCommand.ProcessRecord">
+            <inheritdoc/>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.ScriptAnalyzerCommand.Predicate(System.Management.Automation.Language.Ast)">
+            <summary>
+            A predicate used to determine if an Ast is in an error state.
+            </summary>
+            <param name="ast">The ast to be tested.</param>
+            <returns><see langword="true"/> if the ast represents a potential error state.</returns>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.ScriptAnalyzerCommand.CreateResultObject(System.Management.Automation.Language.Ast)">
+            <summary>
+            Creates the result object written for violations of the test represented by
+            this command.
+            </summary>
+            <param name="ast"></param>
+            <returns></returns>
+        </member>
+        <member name="P:PSSharp.ScriptAnalyzerRules.ScriptAnalyzerCommand.Message">
+            <summary>
+            The name of the rule associated with infractions. By default, the resource string
+            identified by the name of the type.
+            </summary>
+        </member>
+        <member name="P:PSSharp.ScriptAnalyzerRules.ScriptAnalyzerCommand.RuleName">
+            <summary>
+            The name of the rule associated with infractions. By default, the name of the type.
+            </summary>
+        </member>
+        <member name="P:PSSharp.ScriptAnalyzerRules.ScriptAnalyzerCommand.Severity">
+            <inheritdoc cref="T:PSSharp.ScriptAnalyzerRules.ScriptAnalyzerCommand.DiagnosticSeverity"/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.ScriptAnalyzerCommand.DiagnosticSeverity">
+            <summary>
+            Defines the severity of infractions.
+            </summary>
+        </member>
+        <member name="P:PSSharp.ScriptAnalyzerRules.ScriptAnalyzerCommand.SearchNestedScriptBlocks">
+            <summary>
+            Determines if nested scriptblocks of <see cref="P:PSSharp.ScriptAnalyzerRules.ScriptAnalyzerCommand.Ast"/> will also be tested for
+            child asts where <see cref="M:PSSharp.ScriptAnalyzerRules.ScriptAnalyzerCommand.Predicate(System.Management.Automation.Language.Ast)"/> is true.
+            </summary>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.ScriptAnalyzerCommand`1">
+            <summary><inheritdoc cref="T:PSSharp.ScriptAnalyzerRules.ScriptAnalyzerCommand"/></summary>
+            <typeparam name="TAst">The <see cref="T:System.Management.Automation.Language.Ast"/> type to be tested.</typeparam>
+        </member>
+        <member name="P:PSSharp.ScriptAnalyzerRules.ScriptAnalyzerCommand`1.Ast">
+            <inheritdoc/>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.ScriptAnalyzerCommand`1.Predicate(System.Management.Automation.Language.Ast)">
+            <inheritdoc/>
+        </member>
+        <member name="M:PSSharp.ScriptAnalyzerRules.ScriptAnalyzerCommand`1.Predicate(`0)">
+            <inheritdoc cref="M:PSSharp.ScriptAnalyzerRules.ScriptAnalyzerCommand.Predicate(System.Management.Automation.Language.Ast)"/>
+        </member>
+        <member name="T:PSSharp.ScriptAnalyzerRules.Properties.Resources">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:PSSharp.ScriptAnalyzerRules.Properties.Resources.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:PSSharp.ScriptAnalyzerRules.Properties.Resources.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:PSSharp.ScriptAnalyzerRules.Properties.Resources.String1">
+            <summary>
+              Looks up a localized string similar to Value1.
+            </summary>
+        </member>
+    </members>
+</doc>
