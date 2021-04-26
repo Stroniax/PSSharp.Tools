@@ -11,7 +11,7 @@
 		<PrebuildScript Condition="'$(PrebuildScript)'==''">$(ProjectDir)Prebuild.ps1</PrebuildScript>
 		<PostbuildScript Condition="'$(PostbuildScript)'==''">$(ProjectDir)Postbuild.ps1</PostbuildScript>
 		<PowerShellPath>%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe</PowerShellPath>
-		<ModuleName>PSSharp.PingJob</ModuleName>
+		<ModuleName>PSSharp.Network</ModuleName>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

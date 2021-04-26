@@ -244,6 +244,55 @@
             <para type="description">Converts IPv4 addresses to their <see cref="T:System.Double"/> or <see cref="T:System.Int64"/> values, and vice versa.</para>
             </summary>
         </member>
+        <member name="M:PSSharp.IPv4TypeConverter.CanConvertFrom(System.Object,System.Type)">
+            <inheritdoc/>
+        </member>
+        <member name="M:PSSharp.IPv4TypeConverter.CanConvertTo(System.Object,System.Type)">
+            <inheritdoc/>
+        </member>
+        <member name="M:PSSharp.IPv4TypeConverter.ConvertFrom(System.Object,System.Type,System.IFormatProvider,System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:PSSharp.IPv4TypeConverter.ConvertTo(System.Object,System.Type,System.IFormatProvider,System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:PSSharp.IPv4TypeConverter.GetBinaryAddressString(System.Management.Automation.PSObject)">
+            <summary>
+            Retrieves a string with the binary representation of an IP address. 
+            If the address is an IPv4 address, the values will be separated by decimals
+            between each octet (every 8 bits).
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PSSharp.IPv4TypeConverter.ConvertIPv4ToNumber(System.Net.IPAddress)">
+            <summary>
+            Converts an IPv4 address to its numeric representation.
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PSSharp.IPv4TypeConverter.ConvertNumberToIPv4(System.Int64)">
+            <summary>
+            Converts a numeric representation of an IPv4 address to the associated <see cref="T:System.Net.IPAddress"/> value.
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PSSharp.IPv4TypeConverter.ConvertCidrToSubnetMask(System.Int32)">
+            <summary>
+            Converts a CIDR integer into the associated subnet mask.
+            </summary>
+            <param name="cidr"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PSSharp.IPv4TypeConverter.ConvertSubnetMaskToCidr(System.Net.IPAddress)">
+            <summary>
+            Converts a subnet mask into the associated numeric CIDR value.
+            </summary>
+            <param name="subnetMask"></param>
+            <returns></returns>
+        </member>
         <member name="T:PSSharp.PingJob">
             <summary>
             A job representing consecutive ping operations until the target responds or the job is stopped.
