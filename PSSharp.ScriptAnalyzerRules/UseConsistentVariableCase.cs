@@ -1,6 +1,8 @@
-﻿using PSSharp.ScriptAnalyzerRules.Extensions;
+﻿using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using PSSharp.ScriptAnalyzerRules.Extensions;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 
@@ -10,13 +12,15 @@ namespace PSSharp.ScriptAnalyzerRules
     /// Fails for variables with casing that does not match the case of the variable's
     /// initial definition.
     /// </summary>
-    [Cmdlet(VerbsDiagnostic.Test, nameof(UseConsistentVariableCase))]
-    public class UseConsistentVariableCase : ScriptAnalyzerCommand<ScriptBlockAst>
+    [Export(typeof(IScriptRule))]
+    public class UseConsistentVariableCase : ScriptAnalyzerRule<ScriptBlockAst>
     {
         /// <inheritdoc/>
-        protected override void ProcessRecord()
+        public override IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string scriptPath)
         {
-            var variables = Ast.GetTopParent().FindAll<VariableExpressionAst>(true);
+            if (ast.Parent != null) yield break;
+
+            var variables = ast.FindAll<VariableExpressionAst>(true);
             var variableNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var variable in variables)
             {
@@ -24,7 +28,7 @@ namespace PSSharp.ScriptAnalyzerRules
                 {
                     if (caseSensitive != variable.VariablePath.UserPath)
                     {
-                        WriteObject(CreateResultObject(variable));
+                        yield return CreateDiagnosticRecord(variable, scriptPath);
                     }
                 }
             }

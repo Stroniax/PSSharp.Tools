@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System;
+using System.ComponentModel.Composition;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 
@@ -7,8 +9,8 @@ namespace PSSharp.ScriptAnalyzerRules
     /// <summary>
     /// Fails if the command is Write-Error.
     /// </summary>
-    [Cmdlet(VerbsDiagnostic.Test, nameof(AvoidWriteError))]
-    public class AvoidWriteError : ScriptAnalyzerCommand<CommandAst>
+    [Export(typeof(IScriptRule))]
+    public class AvoidWriteError : ScriptAnalyzerRule<CommandAst>
     {
         /// <inheritdoc/>
         protected override bool Predicate(CommandAst ast)
@@ -18,6 +20,6 @@ namespace PSSharp.ScriptAnalyzerRules
                 && sceAst.Value.Equals("Write-Error", StringComparison.OrdinalIgnoreCase);
         }
         /// <inheritdoc/>
-        protected override DiagnosticSeverity Severity => DiagnosticSeverity.Warning;
+        public override DiagnosticSeverity DiagnosticSeverity => DiagnosticSeverity.Warning;
     }
 }

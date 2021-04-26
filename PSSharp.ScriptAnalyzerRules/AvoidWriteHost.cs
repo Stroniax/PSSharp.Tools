@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System;
+using System.ComponentModel.Composition;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 
@@ -7,8 +9,8 @@ namespace PSSharp.ScriptAnalyzerRules
     /// <summary>
     /// Fails if the command is Write-Host.
     /// </summary>
-    [Cmdlet(VerbsDiagnostic.Test, nameof(AvoidWriteHost))]
-    public class AvoidWriteHost : ScriptAnalyzerCommand<CommandAst>
+    [Export(typeof(IScriptRule))]
+    public class AvoidWriteHost : ScriptAnalyzerRule<CommandAst>
     {
         /// <inheritdoc/>
         protected override bool Predicate(CommandAst ast)
@@ -18,6 +20,6 @@ namespace PSSharp.ScriptAnalyzerRules
                 && sceAst.Value.Equals("Write-Host", StringComparison.OrdinalIgnoreCase);
         }
         /// <inheritdoc/>
-        protected override DiagnosticSeverity Severity => DiagnosticSeverity.Warning;
+        public override DiagnosticSeverity DiagnosticSeverity => DiagnosticSeverity.Warning;
     }
 }

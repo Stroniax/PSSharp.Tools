@@ -40,15 +40,5 @@ namespace PSSharp.ScriptAnalyzerRules.Extensions
             }
             while (ast != null);
         }
-        public static Ast GetTopParent(this Ast source)
-        {
-            if (source is null) throw new ArgumentNullException(nameof(source));
-            Ast parent = source;
-            while (parent.Parent != null)
-            {
-                parent = parent.Parent;
-            }
-            return parent;
-        }
     }
 }

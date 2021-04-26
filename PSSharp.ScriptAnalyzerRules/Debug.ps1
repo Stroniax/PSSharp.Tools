@@ -20,7 +20,7 @@ param (
 
 Write-Host "Executing debug script." -ForegroundColor Green -BackgroundColor Black
 Write-Host "Importing module." -ForegroundColor Green -BackgroundColor Black
-Import-Module (Join-Path $TargetDirectory -ChildPath "$ModuleName\$ModuleName.psd1")
+# Import-Module (Join-Path $TargetDirectory -ChildPath "$ModuleName\$ModuleName.psd1")
 
 New-PSDrive -Name "Project" -PSProvider FileSystem -Root $TargetDirectory -Scope Global | Out-Null
 Set-Location "Project:"

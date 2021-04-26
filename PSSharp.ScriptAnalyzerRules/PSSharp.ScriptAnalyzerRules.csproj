@@ -8,8 +8,6 @@
 		<LangVersion>8.0</LangVersion>
 		<Nullable>enable</Nullable>
 		<DebugScript Condition="'$(DebugScript)'==''">$(ProjectDir)Debug.ps1</DebugScript>
-		<PrebuildScript Condition="'$(PrebuildScript)'==''">$(ProjectDir)Prebuild.ps1</PrebuildScript>
-		<PostbuildScript Condition="'$(PostbuildScript)'==''">$(ProjectDir)Postbuild.ps1</PostbuildScript>
 		<PowerShellPath>%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe</PowerShellPath>
 		<ModuleName>PSSharp.ScriptAnalyzerRules</ModuleName>
 	</PropertyGroup>
@@ -29,6 +27,13 @@
 
 	<ItemGroup>
 		<PackageReference Include="PowerShellStandard.Library" Version="5.1.0" PrivateAssets="all" />
+		<PackageReference Include="System.ComponentModel.Composition" Version="5.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="Microsoft.Windows.PowerShell.ScriptAnalyzer">
+	    <HintPath>obj\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll</HintPath>
+	  </Reference>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -45,25 +50,5 @@
 	    <LastGenOutput>Resources.Designer.cs</LastGenOutput>
 	  </EmbeddedResource>
 	</ItemGroup>
-
-	<ItemGroup>
-		<None Update="Postbuild.ps1">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Prebuild.ps1">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Debug.ps1">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
-
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Exec Command="$(PowerShellPath) -NoProfile -ExecutionPolicy RemoteSigned -File $(PostbuildScript) -Configuration $(ConfigurationName) -ProjectName $(ProjectName) -TargetName $(TargetName) -TargetPath $(TargetPath) -TargetDirectory $(TargetDir) -ProjectDirectory $(ProjectDir) -ModuleName $(ModuleName)" />
-	</Target>
-
-	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-		<Exec Command="$(PowerShellPath) -NoProfile -ExecutionPolicy RemoteSigned -File $(PrebuildScript) -Configuration $(ConfigurationName) -ProjectName $(ProjectName) -TargetName $(TargetName) -TargetPath $(TargetPath) -TargetDirectory $(TargetDir) -ProjectDirectory $(ProjectDir) -ModuleName $(ModuleName)" />
-	</Target>
 
 </Project>

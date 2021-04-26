@@ -1,4 +1,6 @@
-﻿using System.Management.Automation;
+﻿using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System.ComponentModel.Composition;
+using System.Management.Automation;
 using System.Management.Automation.Language;
 
 namespace PSSharp.ScriptAnalyzerRules
@@ -7,8 +9,8 @@ namespace PSSharp.ScriptAnalyzerRules
     /// Fails if the string is a double-quoted or not quoted, and does not contain
     /// special characters or expandable expressions.
     /// </summary>
-    [Cmdlet(VerbsDiagnostic.Test, nameof(UseSingleQuotedStringWhenNotInterpolated))]
-    public class UseSingleQuotedStringWhenNotInterpolated : ScriptAnalyzerCommand<StringConstantExpressionAst>
+    [Export(typeof(IScriptRule))]
+    public class UseSingleQuotedStringWhenNotInterpolated : ScriptAnalyzerRule<StringConstantExpressionAst>
     {
         /// <inheritdoc/>
         protected override bool Predicate(StringConstantExpressionAst ast)

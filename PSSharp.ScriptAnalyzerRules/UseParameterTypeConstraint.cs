@@ -1,4 +1,6 @@
-﻿using PSSharp.ScriptAnalyzerRules.Extensions;
+﻿using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using PSSharp.ScriptAnalyzerRules.Extensions;
+using System.ComponentModel.Composition;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 
@@ -7,8 +9,8 @@ namespace PSSharp.ScriptAnalyzerRules
     /// <summary>
     /// Fails if a parameter is not explicitly constrainted to a type.
     /// </summary>
-    [Cmdlet(VerbsDiagnostic.Test, nameof(UseParameterTypeConstraint))]
-    public class UseParameterTypeConstraint : ScriptAnalyzerCommand<ParameterAst>
+    [Export(typeof(IScriptRule))]
+    public class UseParameterTypeConstraint : ScriptAnalyzerRule<ParameterAst>
     {
         /// <inheritdoc/>
         protected override bool Predicate(ParameterAst ast)

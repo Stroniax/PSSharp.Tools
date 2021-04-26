@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System;
+using System.ComponentModel.Composition;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 
@@ -7,8 +9,8 @@ namespace PSSharp.ScriptAnalyzerRules
     /// <summary>
     /// Fails if the RemotingCapability argument is not named.
     /// </summary>
-    [Cmdlet(VerbsDiagnostic.Test, nameof(UseRemotingCapability))]
-    public class UseRemotingCapability : ScriptAnalyzerCommand<AttributeAst>
+    [Export(typeof(IScriptRule))]
+    public class UseRemotingCapability : ScriptAnalyzerRule<AttributeAst>
     {
         /// <inheritdoc/>
         protected override bool Predicate(AttributeAst ast)

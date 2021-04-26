@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System;
+using System.ComponentModel.Composition;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 
@@ -8,8 +10,8 @@ namespace PSSharp.ScriptAnalyzerRules
     /// Fails if no argument completer attribute is assigned to the parameter and the
     /// parameter name does not end with the text "Path".
     /// </summary>
-    [Cmdlet(VerbsDiagnostic.Test, nameof(UseParameterArgumentCompleter))]
-    public class UseParameterArgumentCompleter : ScriptAnalyzerCommand<ParameterAst>
+    [Export(typeof(IScriptRule))]
+    public class UseParameterArgumentCompleter : ScriptAnalyzerRule<ParameterAst>
     {
         /// <inheritdoc/>
         protected override bool Predicate(ParameterAst ast)
@@ -20,13 +22,10 @@ namespace PSSharp.ScriptAnalyzerRules
             }
             foreach (var attriubuteBase in ast.Attributes)
             {
-                if (attriubuteBase is AttributeAst attribute)
+                if (typeof(ArgumentCompleterAttribute).IsAssignableFrom(
+                    attriubuteBase.TypeName.GetReflectionType()))
                 {
-                    if (typeof(ArgumentCompleterAttribute).IsAssignableFrom(
-                        attriubuteBase.TypeName.GetReflectionType()))
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
             return true;

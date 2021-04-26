@@ -1,4 +1,6 @@
-﻿using System.Management.Automation;
+﻿using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System.ComponentModel.Composition;
+using System.Management.Automation;
 using System.Management.Automation.Language;
 
 namespace PSSharp.ScriptAnalyzerRules
@@ -7,8 +9,8 @@ namespace PSSharp.ScriptAnalyzerRules
     /// Fails if the <see cref="ExpressionAst"/> is a multi-line stirng that is not
     /// a here-string.
     /// </summary>
-    [Cmdlet(VerbsDiagnostic.Test, nameof(UseHereStringForMultiline))]
-    public class UseHereStringForMultiline : ScriptAnalyzerCommand<ExpressionAst>
+    [Export(typeof(IScriptRule))]
+    public class UseHereStringForMultiline : ScriptAnalyzerRule<ExpressionAst>
     {
         /// <inheritdoc/>
         protected override bool Predicate(ExpressionAst ast)

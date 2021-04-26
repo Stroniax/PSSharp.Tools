@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System;
+using System.ComponentModel.Composition;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 
@@ -9,8 +11,8 @@ namespace PSSharp.ScriptAnalyzerRules
     /// <see cref="CmdletCommonMetadataAttribute.DefaultParameterSetName"/> if a parameter does define
     /// <see cref="ParameterAttribute.ParameterSetName"/>.
     /// </summary>
-    [Cmdlet(VerbsDiagnostic.Test, nameof(UseDefaultParameterSet))]
-    public class UseDefaultParameterSet : ScriptAnalyzerCommand<ParamBlockAst>
+    [Export(typeof(IScriptRule))]
+    public class UseDefaultParameterSet : ScriptAnalyzerRule<ParamBlockAst>
     {
         /// <inheritdoc/>
         protected override bool Predicate(ParamBlockAst ast)
@@ -58,6 +60,6 @@ namespace PSSharp.ScriptAnalyzerRules
             }
         }
         /// <inheritdoc/>
-        protected override DiagnosticSeverity Severity => DiagnosticSeverity.Error;
+        public override DiagnosticSeverity DiagnosticSeverity => DiagnosticSeverity.Error;
     }
 }

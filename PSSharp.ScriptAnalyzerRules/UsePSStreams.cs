@@ -1,5 +1,7 @@
-﻿using PSSharp.ScriptAnalyzerRules.Extensions;
+﻿using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using PSSharp.ScriptAnalyzerRules.Extensions;
 using System;
+using System.ComponentModel.Composition;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 
@@ -8,8 +10,8 @@ namespace PSSharp.ScriptAnalyzerRules
     /// <summary>
     /// Fails if the function does not use Write-Verbose, Write-Information, or Write-Debug.
     /// </summary>
-    [Cmdlet(VerbsDiagnostic.Test, nameof(UsePSStreams))]
-    public class UsePSStreams : ScriptAnalyzerCommand<FunctionDefinitionAst>
+    [Export(typeof(IScriptRule))]
+    public class UsePSStreams : ScriptAnalyzerRule<FunctionDefinitionAst>
     {
         /// <inheritdoc/>
         protected override bool Predicate(FunctionDefinitionAst ast)

@@ -1,6 +1,8 @@
-﻿using PSSharp.ScriptAnalyzerRules.Extensions;
+﻿using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using PSSharp.ScriptAnalyzerRules.Extensions;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 
@@ -9,14 +11,15 @@ namespace PSSharp.ScriptAnalyzerRules
     /// <summary>
     /// Fails for any variable assignment that is not explicitly typed.
     /// </summary>
-    [Cmdlet(VerbsDiagnostic.Test, nameof(UseVariableTypeConstraint))]
-    public class UseVariableTypeConstraint : ScriptAnalyzerCommand<ScriptBlockAst>
+    [Export(typeof(IScriptRule))]
+    public class UseVariableTypeConstraint : ScriptAnalyzerRule<ScriptBlockAst>
     {
         /// <inheritdoc/>
-        protected override void ProcessRecord()
+        public override IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string scriptPath)
         {
-            var parent = Ast.GetTopParent();
-            var assignments = parent.FindAll<AssignmentStatementAst>(true);
+            if (ast.Parent != null) yield break;
+
+            var assignments = ast.FindAll<AssignmentStatementAst>(true);
             var assignedVariables = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
             foreach (var assignment in assignments)
             {
@@ -44,7 +47,7 @@ namespace PSSharp.ScriptAnalyzerRules
                 }
                 if (!hasTypeConstraint)
                 {
-                    WriteObject(CreateResultObject(assignment.Left));
+                    yield return CreateDiagnosticRecord(assignment.Left, scriptPath);
                 }
             }
         }

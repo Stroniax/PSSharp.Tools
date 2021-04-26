@@ -1,6 +1,8 @@
-﻿using PSSharp.ScriptAnalyzerRules.Extensions;
+﻿using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using PSSharp.ScriptAnalyzerRules.Extensions;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 
@@ -9,14 +11,14 @@ namespace PSSharp.ScriptAnalyzerRules
     /// <summary>
     /// Fails for any <see cref="VariableExpressionAst"/> that is not within a 
     /// </summary>
-    [Cmdlet(VerbsDiagnostic.Test, nameof(AvoidUsingUndefinedVariable))]
-    public class AvoidUsingUndefinedVariable : ScriptAnalyzerCommand<ScriptBlockAst>
+    [Export(typeof(IScriptRule))]
+    public class AvoidUsingUndefinedVariable : ScriptAnalyzerRule<ScriptBlockAst>
     {
         /// <inheritdoc/>
-        protected override void ProcessRecord()
+        public override IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
-            var parent = Ast.GetTopParent();
-            var allVariables = parent.FindAll<VariableExpressionAst>(true);
+            if (ast.Parent != null) yield break;
+            var allVariables = ast.FindAll<VariableExpressionAst>(true);
             var assignedVariables = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
             foreach (var variable in allVariables)
             {
@@ -30,13 +32,13 @@ namespace PSSharp.ScriptAnalyzerRules
                     goto next_variable;
                 }
 
-                WriteObject(CreateResultObject(variable));
+                yield return CreateDiagnosticRecord(variable);
             next_variable:;
             }
         }
         /// <inheritdoc/>
         protected override bool Predicate(ScriptBlockAst ast) => throw new NotImplementedException();
         /// <inheritdoc/>
-        protected override DiagnosticSeverity Severity => DiagnosticSeverity.Error;
+        public override DiagnosticSeverity DiagnosticSeverity => DiagnosticSeverity.Error;
     }
 }

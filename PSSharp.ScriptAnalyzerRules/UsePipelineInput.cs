@@ -1,5 +1,7 @@
-﻿using PSSharp.ScriptAnalyzerRules.Extensions;
+﻿using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using PSSharp.ScriptAnalyzerRules.Extensions;
 using System;
+using System.ComponentModel.Composition;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 
@@ -9,8 +11,8 @@ namespace PSSharp.ScriptAnalyzerRules
     /// Fails if no parameters accept pipeline input, unless the ParamBlock contains 
     /// an attribute of type PSSharp.NoPipelineInputAttribute.
     /// </summary>
-    [Cmdlet(VerbsDiagnostic.Test, nameof(UsePipelineInput))]
-    public class UsePipelineInput : ScriptAnalyzerCommand<ParamBlockAst>
+    [Export(typeof(IScriptRule))]
+    public class UsePipelineInput : ScriptAnalyzerRule<ParamBlockAst>
     {
         /// <inheritdoc/>
         protected override bool Predicate(ParamBlockAst ast)

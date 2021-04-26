@@ -1,5 +1,7 @@
-﻿using PSSharp.ScriptAnalyzerRules.Extensions;
+﻿using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using PSSharp.ScriptAnalyzerRules.Extensions;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Text.RegularExpressions;
@@ -10,13 +12,13 @@ namespace PSSharp.ScriptAnalyzerRules
     /// Fails if a variable within a function begins with a capital letter, unless that variable
     /// is a parameter of the function.
     /// </summary>
-    [Cmdlet(VerbsDiagnostic.Test, nameof(UseCamelCaseForVariable))]
-    public class UseCamelCaseForVariable : ScriptAnalyzerCommand
+    [Export(typeof(IScriptRule))]
+    public class UseCamelCaseForVariable : ScriptAnalyzerRule
     {
         /// <inheritdoc/>
-        protected override void ProcessRecord()
+        public override IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string scriptPath)
         {
-            if (Ast is FunctionDefinitionAst function)
+            if (ast is FunctionDefinitionAst function)
             {
                 var parameterNames = new List<string>();
                 var parameters = function.FindAll<ParameterAst>(false);
@@ -30,7 +32,7 @@ namespace PSSharp.ScriptAnalyzerRules
                     true);
                 foreach (var violation in violations)
                 {
-                    WriteObject(CreateResultObject(violation));
+                    yield return CreateDiagnosticRecord(violation, scriptPath);
                 }
             }
         }
